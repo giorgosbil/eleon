@@ -6,7 +6,7 @@ $context = ecw_require_admin(); $navActive = 'settings'; $base = ecw_web_base();
 $settings = ecw_webhook_settings((int)$context['organization_id']);
 $h = static fn($v): string => htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
 ?>
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Integrations — Case Workspace</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Integrations — <?= htmlspecialchars(ecw_product_brand()['name'], ENT_QUOTES, 'UTF-8') ?></title>
 <link rel="stylesheet" href="<?= $h($base) ?>assets/app.css?v=<?= filemtime(dirname(__DIR__) . '/assets/app.css') ?>"></head>
 <body class="page-body" data-csrf="<?= $h(ecw_csrf_token()) ?>"><?php require dirname(__DIR__) . '/partials/nav.php'; ?>
 <div class="settings-shell btn-scope"><?php require dirname(__DIR__) . '/partials/settings-nav.php'; ?>

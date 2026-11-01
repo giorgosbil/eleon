@@ -54,7 +54,7 @@ $backupFromEnv = (string)getenv('ECW_BACKUP_PASSWORD') !== '';
 $dbEnc = ecw_db_encryption_status();
 $daysOpts = static fn(array $opts, int $cur): string => implode('', array_map(static fn($d) => '<option value="' . $d . '"' . ($d === $cur ? ' selected' : '') . '>' . ($d === 0 ? 'Keep forever' : ($d % 365 === 0 ? ($d / 365) . ' year' . ($d === 365 ? '' : 's') : $d . ' days')) . '</option>', array_unique(array_merge($opts, [$cur]))));
 ?>
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Security — Case Workspace</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Security — <?= htmlspecialchars(ecw_product_brand()['name'], ENT_QUOTES, 'UTF-8') ?></title>
 <link rel="stylesheet" href="<?= $h($base) ?>assets/app.css?v=<?= filemtime(dirname(__DIR__) . '/assets/app.css') ?>"><link rel="stylesheet" href="<?= $h($base) ?>assets/auth.css"></head>
 <body class="page-body"><?php require dirname(__DIR__) . '/partials/nav.php'; ?>
 <div class="settings-shell btn-scope"><?php require dirname(__DIR__) . '/partials/settings-nav.php'; ?>

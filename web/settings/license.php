@@ -32,7 +32,7 @@ $limit = static fn(?int $n): string => $n === null ? 'no limit' : 'of ' . $n;
 $fmt = static fn(?string $d): string => $d ? date('j M Y', strtotime($d)) : '';
 $order = array_keys(ecw_packages());
 ?>
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>License — Case Workspace</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>License — <?= htmlspecialchars(ecw_product_brand()['name'], ENT_QUOTES, 'UTF-8') ?></title>
 <link rel="stylesheet" href="<?= $h($base) ?>assets/app.css?v=<?= filemtime(dirname(__DIR__) . '/assets/app.css') ?>">
 </head>
 <body class="page-body"><?php require dirname(__DIR__) . '/partials/nav.php'; ?>

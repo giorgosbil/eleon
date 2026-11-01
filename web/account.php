@@ -103,7 +103,7 @@ $navActive = 'settings';
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Account — Case Workspace</title>
+<title>Account — <?= htmlspecialchars(ecw_product_brand()['name'], ENT_QUOTES, 'UTF-8') ?></title>
 <link rel="stylesheet" href="assets/app.css">
 <link rel="stylesheet" href="assets/auth.css">
 </head>

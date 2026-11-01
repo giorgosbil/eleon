@@ -31,7 +31,7 @@ $a = ecw_load_appearance($userId);
 $order = ($prefsOf($userId)['thread_order'] ?? 'asc') === 'desc' ? 'desc' : 'asc';
 ?>
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Email &amp; writing — Case Workspace</title><link rel="stylesheet" href="<?= $h($base) ?>assets/app.css"><link rel="stylesheet" href="<?= $h($base) ?>assets/auth.css"></head>
+<title>Email &amp; writing — <?= htmlspecialchars(ecw_product_brand()['name'], ENT_QUOTES, 'UTF-8') ?></title><link rel="stylesheet" href="<?= $h($base) ?>assets/app.css"><link rel="stylesheet" href="<?= $h($base) ?>assets/auth.css"></head>
 <body class="page-body"><?php require dirname(__DIR__) . '/partials/nav.php'; ?>
 <div class="settings-shell btn-scope"><?php require dirname(__DIR__) . '/partials/settings-nav.php'; ?>
 <main class="page settings-wide"><h1>Email &amp; writing</h1>

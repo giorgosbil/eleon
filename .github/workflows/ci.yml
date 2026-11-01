@@ -12,3 +12,12 @@ jobs:
         run: find bin lib web modules tests docker -type f -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Community availability without license or database
         run: php tests/community_edition_test.php
+      - name: Both installation branding profiles
+        run: php tests/product_brand_test.php
+  setup-guide:
+    runs-on: ubuntu-latest
+    container: node:22-bookworm-slim
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Offline setup and settings import
+        run: node tests/welcome_setup_test.cjs

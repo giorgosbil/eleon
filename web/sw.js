@@ -16,11 +16,11 @@ self.addEventListener('push', (event) => {
   if (typeof data.badge === 'number' && 'setAppBadge' in self.navigator) {
     (data.badge > 0 ? self.navigator.setAppBadge(data.badge) : data.badge < 0 ? self.navigator.setAppBadge() : self.navigator.clearAppBadge()).catch(() => {});
   }
-  event.waitUntil(self.registration.showNotification(data.title || 'Case Workspace', {
+  event.waitUntil(self.registration.showNotification(data.title || data.product_name || 'Case Workspace', {
     body: data.body || '',
     tag: data.tag || undefined,
     renotify: !!data.tag,
-    icon: 'assets/icons/icon-192.png',
+    icon: data.icon || 'assets/icons/icon-192.png',
     badge: 'assets/icons/badge-72.png',
     data: { url },
   }));

@@ -141,7 +141,7 @@ $h = static fn($v): string => htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Sign in — Email Case Workspace</title>
+<title>Sign in — <?= htmlspecialchars(ecw_product_brand()['name'], ENT_QUOTES, 'UTF-8') ?></title>
 <link rel="stylesheet" href="assets/app.css">
 <link rel="stylesheet" href="assets/auth.css">
 <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css">
@@ -151,7 +151,7 @@ $h = static fn($v): string => htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
 <nav class="auth-lang" aria-label="Language"><?php foreach (ECW_LANGUAGES as $code => $label): ?><a href="?lang=<?= $h($code) ?>" class="notranslate<?= $code === $authLang ? ' active' : '' ?>" lang="<?= $h($code) ?>"><?= $h($label) ?></a><?php endforeach; ?></nav>
 
 <main class="auth-card">
-  <h1>Email Case Workspace</h1>
+  <h1><img src="<?= $h(ecw_product_brand()['icons']) ?>favicon-32.png" width="32" height="32" alt=""> <?= $h(ecw_product_brand()['name']) ?></h1>
   <p class="auth-sub">Sign in to continue.</p>
 
   <?php if ($error !== null): ?>

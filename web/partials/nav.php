@@ -25,6 +25,8 @@ $navBase = ecw_web_base();
 $navUser = $navContext['user'];
 $navRole = $navContext['role'];
 $navCsrf = ecw_csrf_token();
+$navProduct = ecw_product_brand_for_page($navContext, $_GET);
+$navProductPreview = $navProduct['profile'] !== ecw_product_brand()['profile'];
 $navActive = $navActive ?? '';
 $e = static fn($v): string => htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
 
@@ -98,18 +100,19 @@ echo ecw_i18n_scripts(ecw_user_language((int)$navUser['id']), $navBase);
 <link rel="stylesheet" href="<?= $e($navBase) ?>assets/teams.css?v=<?= filemtime(dirname(__DIR__) . '/assets/teams.css') ?>">
 <script>
 // Installable app (PWA): manifest, icons and the service worker for push notifications.
-(function (b) {
+(function (b, product, preview) {
   var add = function (tag, attrs) { var n = document.createElement(tag); for (var k in attrs) n.setAttribute(k, attrs[k]); document.head.appendChild(n); };
-  add('link', { rel: 'manifest', href: b + 'manifest.webmanifest' });
-  add('link', { rel: 'icon', type: 'image/png', href: b + 'assets/icons/favicon-32.png' });
-  add('link', { rel: 'apple-touch-icon', href: b + 'assets/icons/apple-touch-icon.png' });
+  add('link', { rel: 'manifest', href: b + 'manifest.php' });
+  add('link', { rel: 'icon', type: 'image/png', href: b + product.icons + 'favicon-32.png' });
+  add('link', { rel: 'apple-touch-icon', href: b + product.icons + 'apple-touch-icon.png' });
   add('meta', { name: 'theme-color', content: '#2f5aa8' });
   add('meta', { name: 'apple-mobile-web-app-capable', content: 'yes' });
-  add('meta', { name: 'apple-mobile-web-app-title', content: 'Cases' });
+  add('meta', { name: 'apple-mobile-web-app-title', content: product.short_name });
   if ('serviceWorker' in navigator && window.isSecureContext && window.self === window.top) {
     navigator.serviceWorker.register(b + 'sw.js', { scope: b }).catch(function () {});
   }
-})(<?= json_encode($navBase, JSON_HEX_TAG | JSON_UNESCAPED_SLASHES) ?>);
+  if (preview) document.title = document.title.replace(/(?:Email )?Case Workspace|Eleon/g, product.name);
+})(<?= json_encode($navBase, JSON_HEX_TAG | JSON_UNESCAPED_SLASHES) ?>, <?= json_encode($navProduct, JSON_HEX_TAG) ?>, <?= $navProductPreview ? 'true' : 'false' ?>);
 </script>
 <script>window.ecwWebBase = <?= json_encode($navBase, JSON_HEX_TAG | JSON_UNESCAPED_SLASHES) ?>; window.ecwCsrf = <?= json_encode($navCsrf, JSON_HEX_TAG) ?>;
 window.ecwFeatures = <?= json_encode($navFeatures, JSON_HEX_TAG) ?>; window.ecwCaseSettings = <?= json_encode($navCaseSettings, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) ?>; window.ecwUserId = <?= (int)$navUser['id'] ?>; window.ecwAccountId = <?= $navAccount !== null ? (int)$navAccount['id'] : 0 ?>; window.ecwHomeTz = <?= json_encode($navHomeTz, JSON_HEX_TAG) ?>; window.ecwShowHomeZone = <?= $navShowHomeZone ? 'true' : 'false' ?>;
@@ -169,10 +172,11 @@ document.addEventListener('submit', (e) => {
 <script src="<?= $e($navBase) ?>assets/help.js?v=<?= filemtime(dirname(__DIR__) . '/assets/help.js') ?>" defer></script>
 <nav class="appnav" aria-label="Application">
   <?php
-    // Settings → Branding: the business's logo and name; the Case Workspace mark always stays, on the logo's corner.
+    // Workspace logo/name and the installation's chosen product mark.
     require_once dirname(__DIR__, 2) . '/lib/branding.php';
     $navBrand = ecw_branding((int)$navContext['organization_id']);
-    $navMark = '<img class="brand-mark%s" src="' . $e($navBase) . 'assets/icons/favicon-32.png" alt="" title="Case Workspace · open-source software" width="16" height="16">';
+    if ($navProductPreview) $navBrand = ['name' => $navProduct['name'], 'logo_ext' => null, 'logo_v' => null];
+    $navMark = '<img class="brand-mark%s" src="' . $e($navBase . $navProduct['icons']) . 'favicon-32.png" alt="" title="' . $e($navProduct['name']) . ' · open-source software" width="16" height="16">';
   ?>
   <span class="appnav-brand<?= $navBrand['logo_ext'] ? ' has-logo' : '' ?>">
     <?php if ($navBrand['logo_ext']): ?>

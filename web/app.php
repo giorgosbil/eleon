@@ -42,7 +42,7 @@ $navActive = 'mail';
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mail — Case Workspace</title>
+<title>Mail — <?= htmlspecialchars(ecw_product_brand()['name'], ENT_QUOTES, 'UTF-8') ?></title>
 <link rel="stylesheet" href="assets/vendor/quill/quill.snow.css">
 <link rel="stylesheet" href="assets/app.css?v=<?= filemtime(__DIR__ . '/assets/app.css') ?>">
 <link rel="stylesheet" href="assets/auth.css">

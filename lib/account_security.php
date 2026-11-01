@@ -324,7 +324,7 @@ function ecw_email_brand(int $organizationId): string
     require_once __DIR__ . '/branding.php';
     try { $name = trim((string)(ecw_branding($organizationId)['name'] ?? '')); } catch (Throwable $e) { return ''; }
     // Never saved in Branding: the product's default name, which emails do not show.
-    return $name === ECW_BRAND_DEFAULT_NAME ? '' : $name;
+    return in_array($name, ['Case Workspace', 'Eleon'], true) ? '' : $name;
 }
 
 /** How long an invitation link (Settings → Users → Add a user) works. */

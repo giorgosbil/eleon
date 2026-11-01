@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 /** Standalone configuration takes precedence; the hosted app keeps its existing fallback. */
+require_once __DIR__ . '/product_brand.php';
 function ecw_config(): array
 {
     $path = getenv('ECW_CONFIG_FILE') ?: dirname(__DIR__, 3) . '/config.local.php';

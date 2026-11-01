@@ -42,7 +42,7 @@ $changelog = (string)@file_get_contents(dirname(__DIR__, 2) . '/CHANGELOG.md');
 $problems = ecw_errors_open(50);
 $sourceLabel = ['server' => 'Server', 'daemon' => 'Background', 'browser' => 'Browser'];
 ?>
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>System health — Case Workspace</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>System health — <?= htmlspecialchars(ecw_product_brand()['name'], ENT_QUOTES, 'UTF-8') ?></title>
 <link rel="stylesheet" href="<?= $h($base) ?>assets/app.css?v=<?= filemtime(dirname(__DIR__) . '/assets/app.css') ?>"><link rel="stylesheet" href="<?= $h($base) ?>assets/auth.css"></head>
 <body class="page-body"><?php require dirname(__DIR__) . '/partials/nav.php'; ?>
 <div class="settings-shell btn-scope"><?php require dirname(__DIR__) . '/partials/settings-nav.php'; ?>

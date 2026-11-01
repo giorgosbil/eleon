@@ -8,7 +8,7 @@ require_once dirname(__DIR__) . '/lib/session.php';
 $context = ecw_require_login(); ecw_require_feature('contacts'); $navActive = 'contacts'; $base = ecw_web_base();
 $h = static fn($v): string => htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
 ?>
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Contacts — Case Workspace</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Contacts — <?= htmlspecialchars(ecw_product_brand()['name'], ENT_QUOTES, 'UTF-8') ?></title>
 <link rel="stylesheet" href="<?= $h($base) ?>assets/app.css?v=<?= filemtime(__DIR__ . '/assets/app.css') ?>">
 <link rel="stylesheet" href="<?= $h($base) ?>assets/contacts.css?v=<?= filemtime(__DIR__ . '/assets/contacts.css') ?>">
 </head>

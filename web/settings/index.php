@@ -19,7 +19,7 @@ $hints = ['For me' => 'Only you', 'Cases' => 'Everyone', 'Team' => 'Admins', 'Co
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Settings — Case Workspace</title>
+<title>Settings — <?= htmlspecialchars(ecw_product_brand()['name'], ENT_QUOTES, 'UTF-8') ?></title>
 <link rel="stylesheet" href="<?= $h($base) ?>assets/app.css">
 <link rel="stylesheet" href="<?= $h($base) ?>assets/auth.css">
 </head>

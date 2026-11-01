@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * Workspace branding (Settings → Branding, admins): the name in the top bar
- * (or none) and the business logo. The Case Workspace mark always stays, as a
+ * (or none) and the business logo. The selected product mark stays, as a
  * small badge on the logo's corner (partials/nav.php): the business leads, the
  * open-source software it runs on is still credited.
  *
@@ -13,7 +13,8 @@
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/license.php';
 
-const ECW_BRAND_DEFAULT_NAME = 'Eleon';
+require_once __DIR__ . '/product_brand.php';
+const ECW_BRAND_DEFAULT_NAME = 'Case Workspace';
 const ECW_BRAND_LOGO_MAX_BYTES = 1048576;
 const ECW_BRAND_LOGO_TYPES = [IMAGETYPE_PNG => 'png', IMAGETYPE_JPEG => 'jpg', IMAGETYPE_WEBP => 'webp', IMAGETYPE_GIF => 'gif'];
 
@@ -25,7 +26,7 @@ function ecw_branding(int $orgId): array
     $ext = in_array($b['logo_ext'] ?? null, ECW_BRAND_LOGO_TYPES, true) ? $b['logo_ext'] : null;
     if ($ext !== null && !is_file(ecw_brand_logo_path($orgId, $ext))) $ext = null;
     return [
-        'name' => array_key_exists('name', $b) ? (string)$b['name'] : ECW_BRAND_DEFAULT_NAME,
+        'name' => array_key_exists('name', $b) && !in_array($b['name'], ['Case Workspace', 'Eleon'], true) ? (string)$b['name'] : ecw_product_brand()['name'],
         'logo_ext' => $ext,
         'logo_v' => $ext !== null ? (string)($b['logo_v'] ?? '') : null,
     ];

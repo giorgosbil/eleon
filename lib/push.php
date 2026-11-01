@@ -16,6 +16,7 @@
 
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/log.php';
+require_once __DIR__ . '/product_brand.php';
 
 function ecw_b64u(string $bin): string { return rtrim(strtr(base64_encode($bin), '+/', '-_'), '='); }
 function ecw_b64u_decode(string $s): string { return (string)base64_decode(strtr($s, '-_', '+/') . str_repeat('=', (4 - strlen($s) % 4) % 4)); }
@@ -98,7 +99,7 @@ function ecw_push_to_user(int $userId, string $title, string $body, string $url 
     $subs = $st->fetchAll();
     if ($subs === []) return 0;
     $keys = ecw_vapid_keys();
-    $payload = json_encode(['title' => $title, 'body' => mb_strimwidth($body, 0, 240, '…'), 'url' => $url, 'tag' => $tag]
+    $payload = json_encode(['product_name' => ecw_product_brand()['name'], 'icon' => ecw_product_brand()['icons'] . 'icon-192.png', 'title' => $title === 'Case Workspace' ? ecw_product_brand()['name'] : $title, 'body' => mb_strimwidth($body, 0, 240, '…'), 'url' => $url, 'tag' => $tag]
         + ($badge !== null ? ['badge' => $badge] : []), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     $ok = 0;
     foreach ($subs as $s) {

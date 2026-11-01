@@ -72,7 +72,7 @@ $detailText = static function (array $r) use ($h): string {
 };
 $qs = static fn(array $over) => '?' . http_build_query(array_filter(array_merge($f, $over), static fn($v) => $v !== '' && $v !== 0 && $v !== null));
 ?>
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Audit log — Case Workspace</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Audit log — <?= htmlspecialchars(ecw_product_brand()['name'], ENT_QUOTES, 'UTF-8') ?></title>
 <link rel="stylesheet" href="<?= $h($base) ?>assets/app.css?v=<?= filemtime(dirname(__DIR__) . '/assets/app.css') ?>"><link rel="stylesheet" href="<?= $h($base) ?>assets/auth.css"></head>
 <body class="page-body"><?php require dirname(__DIR__) . '/partials/nav.php'; ?>
 <div class="settings-shell btn-scope"><?php require dirname(__DIR__) . '/partials/settings-nav.php'; ?>

@@ -10,7 +10,7 @@ $h = static fn($v): string => htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Calendar — Case Workspace</title>
+<title>Calendar — <?= htmlspecialchars(ecw_product_brand()['name'], ENT_QUOTES, 'UTF-8') ?></title>
 <link rel="stylesheet" href="assets/app.css?v=<?= filemtime(__DIR__ . '/assets/app.css') ?>">
 <link rel="stylesheet" href="assets/calendar.css?v=<?= filemtime(__DIR__ . '/assets/calendar.css') ?>">
 </head>

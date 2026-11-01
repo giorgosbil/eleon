@@ -88,7 +88,7 @@ $navActive = 'settings';
 ?>
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mailbox — Case Workspace</title>
+<title>Mailbox — <?= htmlspecialchars(ecw_product_brand()['name'], ENT_QUOTES, 'UTF-8') ?></title>
 <link rel="stylesheet" href="<?= $h($base) ?>assets/app.css"><link rel="stylesheet" href="<?= $h($base) ?>assets/auth.css">
 </head><body class="page-body">
 <?php  require dirname(__DIR__) . '/partials/nav.php'; ?>

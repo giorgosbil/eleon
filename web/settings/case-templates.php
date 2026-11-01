@@ -50,7 +50,7 @@ $usage = [];
 foreach (ecw_db()->query('SELECT template_id, COUNT(*) n FROM `' . ecw_table('cases') . '` WHERE organization_id = ' . $orgId . ' AND template_id IS NOT NULL AND deleted_at IS NULL GROUP BY template_id') as $r) $usage[(int)$r['template_id']] = (int)$r['n'];
 $who = ['' => 'Nobody yet', 'owner' => 'Responsible', 'handler' => 'Handled by'];
 ?>
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Case templates — Case Workspace</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Case templates — <?= htmlspecialchars(ecw_product_brand()['name'], ENT_QUOTES, 'UTF-8') ?></title>
 <link rel="stylesheet" href="<?= $h($base) ?>assets/app.css?v=<?= filemtime(dirname(__DIR__) . '/assets/app.css') ?>"><link rel="stylesheet" href="<?= $h($base) ?>assets/auth.css"></head>
 <body class="page-body"><?php require dirname(__DIR__) . '/partials/nav.php'; ?>
 <div class="settings-shell btn-scope"><?php require dirname(__DIR__) . '/partials/settings-nav.php'; ?>

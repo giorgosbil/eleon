@@ -6,7 +6,7 @@ require_once dirname(__DIR__, 2) . '/lib/account.php';
 $sigAccount = ecw_active_account((int)$context['organization_id'], (int)$context['user']['id']);
 $sigMany = count(ecw_account_choices((int)$context['organization_id'], (int)$context['user']['id'])) > 1;
 ?>
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Signatures — Case Workspace</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Signatures — <?= htmlspecialchars(ecw_product_brand()['name'], ENT_QUOTES, 'UTF-8') ?></title>
 <link rel="stylesheet" href="<?= $h($base) ?>assets/app.css?v=<?= filemtime(dirname(__DIR__) . '/assets/app.css') ?>"><link rel="stylesheet" href="<?= $h($base) ?>assets/auth.css"></head>
 <body class="page-body" data-csrf="<?= $h(ecw_csrf_token()) ?>"><?php  require dirname(__DIR__) . '/partials/nav.php'; ?>
 <div class="settings-shell btn-scope"><?php require dirname(__DIR__) . '/partials/settings-nav.php'; ?>

@@ -58,7 +58,7 @@ $keep = max(1, (int)(getenv('ECW_BACKUP_KEEP') ?: 14));
 $csrf = ecw_csrf_token();
 $size = static fn(int $b): string => $b > 1048576 ? number_format($b / 1048576, 1) . ' MB' : max(1, (int)round($b / 1024)) . ' KB';
 ?>
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Backups — Case Workspace</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Backups — <?= htmlspecialchars(ecw_product_brand()['name'], ENT_QUOTES, 'UTF-8') ?></title>
 <link rel="stylesheet" href="<?= $h($base) ?>assets/app.css?v=<?= filemtime(dirname(__DIR__) . '/assets/app.css') ?>">
 <style>
   .backup-head { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin:14px 0 18px; padding:14px 16px; border:1px solid var(--border); border-radius:12px; background:var(--bg); }

@@ -24,17 +24,18 @@ unset($_SESSION['ecw_brand_error']);
 $logoUrl = $b['logo_ext'] ? $base . 'brand-logo.php?v=' . rawurlencode((string)$b['logo_v']) : '';
 ?>
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Branding — Case Workspace</title><link rel="stylesheet" href="<?= $h($base) ?>assets/app.css"><link rel="stylesheet" href="<?= $h($base) ?>assets/auth.css"></head>
+<title>Branding — <?= htmlspecialchars(ecw_product_brand()['name'], ENT_QUOTES, 'UTF-8') ?></title><link rel="stylesheet" href="<?= $h($base) ?>assets/app.css"><link rel="stylesheet" href="<?= $h($base) ?>assets/auth.css"></head>
 <body class="page-body"><?php require dirname(__DIR__) . '/partials/nav.php'; ?>
 <div class="settings-shell btn-scope"><?php require dirname(__DIR__) . '/partials/settings-nav.php'; ?>
 <main class="page settings-wide"><h1>Branding</h1>
-<p class="muted">Your business in the top bar, for everyone in this workspace. The small Case Workspace mark stays on the corner of your logo: it is the open-source software the workspace runs on.</p>
+<p class="muted">Your business in the top bar, for everyone in this workspace. The selected product mark stays on the corner of your logo.</p>
 <?php if (isset($_GET['saved'])): ?><div class="flash ok">Branding saved.</div><?php endif; ?>
 <?php if ($error): ?><div class="flash err"><?= $h($error) ?></div><?php endif; ?>
+<p class="muted small">Product profile on this installation: <strong><?= $h(ecw_product_brand()['name']) ?></strong>. Run <code>Branding.cmd</code> to switch between Original and Eleon on this PC. This choice is kept when pulling code or transferring workspace data. <a href="?brand_preview=eleon">Preview Eleon on this page</a>.</p>
 <form method="post" enctype="multipart/form-data" id="brandForm" class="brand-form"><input type="hidden" name="csrf" value="<?= $h(ecw_csrf_token()) ?>">
   <fieldset class="ap-group"><legend>Name in the top bar</legend>
     <label class="checkbox-label"><input type="radio" name="name_mode" value="name" <?= $b['name'] !== '' ? 'checked' : '' ?>> Show a name</label>
-    <input type="text" name="name" id="brandName" maxlength="60" value="<?= $h($b['name'] !== '' ? $b['name'] : ECW_BRAND_DEFAULT_NAME) ?>" aria-label="Name in the top bar" placeholder="<?= $h(ECW_BRAND_DEFAULT_NAME) ?>">
+    <input type="text" name="name" id="brandName" maxlength="60" value="<?= $h($b['name'] !== '' ? $b['name'] : ecw_product_brand()['name']) ?>" aria-label="Name in the top bar" placeholder="<?= $h(ecw_product_brand()['name']) ?>">
     <label class="checkbox-label"><input type="radio" name="name_mode" value="none" <?= $b['name'] === '' ? 'checked' : '' ?>> No name, the logo only</label>
   </fieldset>
   <fieldset class="ap-group"><legend>Logo</legend>
@@ -43,7 +44,7 @@ $logoUrl = $b['logo_ext'] ? $base . 'brand-logo.php?v=' . rawurlencode((string)$
     <?php if ($logoUrl): ?><label class="checkbox-label"><input type="checkbox" name="remove_logo" value="1"> Remove the logo</label><?php endif; ?>
   </fieldset>
   <fieldset class="ap-group"><legend>Preview</legend>
-    <div class="brand-preview"><span class="appnav-brand" id="brandPreview" data-product="<?= $h($base) ?>assets/icons/favicon-32.png"></span></div>
+    <div class="brand-preview"><span class="appnav-brand" id="brandPreview" data-product="<?= $h($base . ecw_product_brand()['icons']) ?>favicon-32.png"></span></div>
   </fieldset>
   <p class="ap-actions"><button type="submit" class="primary">Save branding</button></p>
 </form></main></div>

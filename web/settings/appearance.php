@@ -74,7 +74,7 @@ $lookJson = static fn(array $look): string => $h(json_encode($look, JSON_HEX_TAG
 $lookErrors = ['noname' => 'Give the look a name first.', 'full' => 'You have ' . ECW_APPEARANCE_LOOKS_MAX . ' saved looks, the most there can be. Delete one, or save under the name of one you have to replace it.'];
 ?>
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Appearance — Case Workspace</title><link rel="stylesheet" href="<?= $h($base) ?>assets/app.css"><link rel="stylesheet" href="<?= $h($base) ?>assets/auth.css"></head>
+<title>Appearance — <?= htmlspecialchars(ecw_product_brand()['name'], ENT_QUOTES, 'UTF-8') ?></title><link rel="stylesheet" href="<?= $h($base) ?>assets/app.css"><link rel="stylesheet" href="<?= $h($base) ?>assets/auth.css"></head>
 <body class="page-body"><?php require dirname(__DIR__) . '/partials/nav.php'; ?>
 <div class="settings-shell btn-scope"><?php require dirname(__DIR__) . '/partials/settings-nav.php'; ?>
 <main class="page settings-wide"><h1>Appearance</h1>

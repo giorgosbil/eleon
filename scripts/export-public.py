@@ -4,8 +4,10 @@ from pathlib import Path
 import argparse,hashlib,json,re,subprocess
 
 ROOT=Path(__file__).resolve().parents[1]
-EXTRA=['LICENSE','scripts/export-public.py','tests/community_edition_test.php','web/settings/community.php']
-PUBLIC_DOCS={'LOCAL.md','AI.md','CALENDAR.md','CAPABILITIES.md','MICROSOFT_ADMIN_APPROVAL.md','SETUP.md'}
+EXTRA=['LICENSE','scripts/export-public.py','tests/community_edition_test.php','web/settings/community.php',
+       'Branding.cmd','lib/product_brand.php','web/manifest.php','scripts/branding.ps1','tests/product_brand_test.php','tests/welcome_setup_test.cjs','docs/BRANDING.md']
+EXTRA += [str(p.relative_to(ROOT)).replace('\\','/') for p in (ROOT/'web/assets/brands').rglob('*') if p.is_file()]
+PUBLIC_DOCS={'LOCAL.md','AI.md','CALENDAR.md','CAPABILITIES.md','MICROSOFT_ADMIN_APPROVAL.md','SETUP.md','BRANDING.md'}
 SKIP_ROOT={'.git','.vscode','.claude','.codex','.agents','.aws','storage','cache','logs','backups','backups-offsite','exports','dist','updates','vendor','welcome-images','tools'}
 SECRET_PATTERNS=[r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----',r'\bgh[pousr]_[A-Za-z0-9]{30,}',r'\bgithub_pat_[A-Za-z0-9_]{30,}',r'\bsk-proj-[A-Za-z0-9_-]{25,}',r'\bGOCSPX-[A-Za-z0-9_-]{20,}',r'\bAKIA[0-9A-Z]{16}\b']
 

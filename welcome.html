@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Welcome — setup guide</title>
+<title>Set up Eleon</title>
+<link rel="icon" type="image/png" href="web/assets/brands/eleon/favicon-32.png">
+<meta name="description" content="Install Eleon on your own computer or server, connect a mailbox, and start your first case.">
 <!--
   The setup guide and settings editor. Open this file in a browser (double-click);
   it needs no internet and no server. It writes the .env file the start scripts and
@@ -20,24 +22,24 @@
   images from the welcome-images/ folder next to this file (list in its README.md).
   A picture not added yet shows its file name instead.
 
-  Product and company names are placeholders: change BRAND below once they are decided.
+  Product links are defined in BRAND below. All images and styles are local so the guide opens offline.
 -->
 <style>
 :root {
   --bg: #f6f7f9; --card: #ffffff; --text: #1d2330; --muted: #5d6677; --line: #dde1e8;
-  --accent: #2f5aa8; --accent-soft: #e6edf9; --ok: #1a7f37; --ok-soft: #e3f4e8; --warn: #9a6700; --warn-soft: #fbf1d9;
+  --accent: #345aa0; --accent-soft: #eaf0fa; --hero-bg: #f2f1ed; --ok: #1a7f37; --ok-soft: #e3f4e8; --warn: #9a6700; --warn-soft: #fbf1d9;
   --bad: #b42318; --bad-soft: #fbe7e5; --code: #f0f2f5; --shadow: 0 1px 2px rgba(20, 30, 50, .06), 0 4px 16px rgba(20, 30, 50, .05);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #12151b; --card: #1a1e26; --text: #e6e9ef; --muted: #9aa3b2; --line: #2c323d;
-    --accent: #7aa2ec; --accent-soft: #1f2b42; --ok: #5cc27a; --ok-soft: #17301f; --warn: #e0b04f; --warn-soft: #33290f;
+    --accent: #9cb8ed; --accent-soft: #1f2b42; --hero-bg: #1b1d22; --ok: #5cc27a; --ok-soft: #17301f; --warn: #e0b04f; --warn-soft: #33290f;
     --bad: #f07a6e; --bad-soft: #3a1c19; --code: #232833; --shadow: none;
   }
 }
 :root[data-theme="dark"] {
   --bg: #12151b; --card: #1a1e26; --text: #e6e9ef; --muted: #9aa3b2; --line: #2c323d;
-  --accent: #7aa2ec; --accent-soft: #1f2b42; --ok: #5cc27a; --ok-soft: #17301f; --warn: #e0b04f; --warn-soft: #33290f;
+  --accent: #9cb8ed; --accent-soft: #1f2b42; --hero-bg: #1b1d22; --ok: #5cc27a; --ok-soft: #17301f; --warn: #e0b04f; --warn-soft: #33290f;
   --bad: #f07a6e; --bad-soft: #3a1c19; --code: #232833; --shadow: none;
 }
 * { box-sizing: border-box; }
@@ -47,15 +49,24 @@ a { color: var(--accent); overflow-wrap: anywhere; }
 code, pre, .mono { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 13px; }
 code { background: var(--code); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
 
-.hero { background: linear-gradient(135deg, var(--accent) 0%, #5b3fa8 100%); color: #fff; padding: 36px 16px 30px; }
+.hero { background: var(--hero-bg); color: var(--text); border-bottom: 1px solid var(--line); padding: 26px 16px 32px; }
 .hero-in { max-width: 1120px; margin: 0 auto; }
-.hero-top { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; margin-bottom: 6px; }
-.hero h1 { margin: 0 0 8px; font-size: clamp(26px, 4vw, 36px); line-height: 1.2; }
-.hero p { margin: 0; max-width: 680px; font-size: 16px; opacity: .92; }
+.hero-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 30px; }
+.hero-brand { display: inline-flex; align-items: center; gap: 10px; margin-right: auto; padding-right: 18px; font-size: 21px; font-weight: 700; letter-spacing: -.03em; }
+.hero-brand img { border-radius: 11px; flex: none; }
+.hero-label { margin-bottom: 9px; color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.app-recognition { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; padding: 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.app-recognition img { flex: none; border-radius: 12px; }
+.app-recognition p { margin: 3px 0 0; color: var(--muted); }
+.brand-options { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 9px; font-size: 13px; color: var(--muted); }
+.brand-options span { display: inline-flex; align-items: center; gap: 7px; }
+@media (max-width: 520px) { .hero-brand { width: 100%; margin-bottom: 8px; } .hero-top { margin-bottom: 24px; } .app-recognition { align-items: flex-start; } }
+.hero h1 { margin: 0 0 8px; font-size: clamp(28px, 4vw, 38px); letter-spacing: -.035em; line-height: 1.2; }
+.hero p { margin: 0; max-width: 650px; font-size: 16px; color: var(--muted); }
 .hero .facts { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 18px; font-size: 14px; opacity: .95; padding: 0; list-style: none; }
 .hero .facts li::before { content: "✓ "; }
-.hero-btn { background: transparent; border: 1px solid rgba(255,255,255,.5); color: #fff; border-radius: 8px; padding: 4px 10px; font: 13px system-ui, sans-serif; cursor: pointer; }
-.hero-btn:hover { background: rgba(255,255,255,.12); }
+.hero-btn { background: transparent; border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 4px 10px; font: 13px system-ui, sans-serif; cursor: pointer; }
+.hero-btn:hover { background: var(--card); }
 
 .wrap { max-width: 1120px; margin: 0 auto; padding: 24px 16px 64px; display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 28px; }
 @media (max-width: 860px) { .wrap { grid-template-columns: minmax(0, 1fr); } .toc { position: static !important; } .toc ol { display: none; } }
@@ -222,17 +233,18 @@ dialog.guide::backdrop { background: rgba(10, 15, 25, .65); }
 <header class="hero">
   <div class="hero-in">
     <div class="hero-top">
-      <button type="button" class="hero-btn" data-view-go="settings" id="heroSettings">Change settings of an installation</button>
+      <div class="hero-brand"><img src="web/assets/brands/eleon/icon-192.png" width="44" height="44" alt=""><span data-brand="product">Eleon</span></div>
+      <button type="button" class="hero-btn" data-view-go="settings" id="heroSettings">Edit existing settings</button>
       <button type="button" class="hero-btn" data-view-go="wizard" id="heroWizard" hidden>Setup guide</button>
       <button type="button" class="hero-btn" id="themeBtn" title="Light or dark">◐ Theme</button>
     </div>
-    <h1>Welcome to <span data-brand="product"></span></h1>
-    <p>Your email, organised into cases: several conversations about one issue on one timeline, shared with your team, on your own server. This page takes you from nothing to a running workspace, one step at a time.</p>
+    <div class="hero-label">Self-hosted setup</div>
+    <h1>Let’s get <span data-brand="product">Eleon</span> running.</h1>
+    <p>Keep customer emails, supplier replies and team messages in one case. Start here to install Eleon on your computer or server, then connect your first mailbox.</p>
     <ul class="facts">
       <li>About 30–40 minutes</li>
       <li>Runs on your own computer or server</li>
-      <li>Your mail never passes through us</li>
-      <li>Nothing you type here leaves this page</li>
+      <li>Free and open source</li>
     </ul>
   </div>
 </header>
@@ -269,7 +281,7 @@ dialog.guide::backdrop { background: rgba(10, 15, 25, .65); }
           <li><strong>A computer that stays on</strong>: <span data-os="windows">Windows 10 or 11 (Pro, Enterprise or Education)</span><span data-os="linux">Ubuntu 22.04 or newer</span><span data-os="mac">macOS 13 or newer</span>, 8 GB memory, 50 GB free disk, internet.</li>
           <li><strong>Your mail</strong>: Microsoft 365 / Outlook, or Google Workspace. You (or your IT person) must be able to register an app in its admin portal. Step 4 shows how.</li>
           <li data-mode="server"><strong>The server's address</strong> on your network: its IP address (for example <code>192.168.1.20</code>) or a name (for example <code>cases.office.lan</code>).</li>
-          <li><strong>A Pro or Business licence key</strong> is <em>not</em> needed. The free version has no user or mailbox limit. A key only adds the paid modules (last step).</li>
+          <li><strong>No licence key.</strong> The full application is open source under AGPL-3.0-only. Optional AI needs a provider or a compatible local endpoint.</li>
         </ul>
         <label class="mark-done"><input type="checkbox" data-confirm="s-need"> I have these</label>
       </div>
@@ -277,7 +289,7 @@ dialog.guide::backdrop { background: rgba(10, 15, 25, .65); }
 
     <!-- 2 ---------------------------------------------------------------- -->
     <section class="step" id="s-docker" data-step data-title="Get the app and Docker" data-min="8">
-      <div class="step-head"><div class="num">2</div><div><h2>Get the app and Docker</h2><p class="why">Docker runs the app, its database and the mail sync in their own boxes, so nothing else on the computer is touched.</p></div></div>
+      <div class="step-head"><div class="num">2</div><div><h2>Get the app and Docker</h2><p class="why">Docker runs Eleon, its database and the background mail sync. Install it first, then download the app.</p></div></div>
       <div class="step-body">
         <h3>Install Docker</h3>
         <div data-os="windows">
@@ -292,7 +304,7 @@ dialog.guide::backdrop { background: rgba(10, 15, 25, .65); }
         <div data-os="mac"><ol><li>Download <a href="https://www.docker.com/products/docker-desktop/" target="_blank" rel="noopener">Docker Desktop for Mac</a>, install it and open it once.</li></ol></div>
 
         <h3>Get the app</h3>
-        <p>On the project's GitHub page press <strong>Code → Download ZIP</strong> and unpack it, or clone it:</p>
+        <p>On <a href="https://github.com/giorgosbil/eleon" target="_blank" rel="noopener">Eleon’s GitHub page</a>, choose <strong>Code → Download ZIP</strong> and unpack it, or clone it:</p>
         <div class="cmd"><pre id="cloneCmd"></pre></div>
         <p>Put the folder somewhere permanent, for example <code id="folderHint"></code>, and write below where it is. The commands on this page then start by going into it.</p>
         <div class="form">
@@ -338,6 +350,14 @@ dialog.guide::backdrop { background: rgba(10, 15, 25, .65); }
             <label for="f-httpsPort">HTTPS port for the office</label>
             <input type="number" id="f-httpsPort" data-key="httpsPort" min="1" max="65535">
             <div class="hint">People open the app on this port, with a secure connection.</div>
+          </div>
+        </div>
+        <div class="form">
+          <div class="field full">
+            <label for="f-productBrand">App name and icon</label>
+            <select id="f-productBrand" data-key="productBrand"><option value="eleon">Eleon</option><option value="original">Original — Case Workspace</option></select>
+            <div class="hint">Choose how this installation looks. Each computer keeps its own choice when you pull code or transfer workspace data.</div>
+            <div class="brand-options"><span><img src="web/assets/brands/eleon/favicon-32.png" width="24" height="24" alt=""> Eleon</span><span><img src="web/assets/brands/original/favicon-32.png" width="24" height="24" alt=""> Case Workspace (original)</span></div>
           </div>
         </div>
         <h3>Is the port free?</h3>
@@ -595,16 +615,18 @@ dialog.guide::backdrop { background: rgba(10, 15, 25, .65); }
 
     <!-- 10 --------------------------------------------------------------- -->
     <section class="step" id="s-app" data-step data-title="First steps in the app" data-min="5">
-      <div class="step-head"><div class="num">10</div><div><h2>First steps in the app</h2><p class="why">Five minutes, and your team can start.</p></div></div>
+      <div class="step-head"><div class="num">10</div><div><h2>First steps in the app</h2><p class="why">Connect a mailbox, invite a colleague if you need to, and try your first case.</p></div></div>
       <div class="step-body">
+        <div class="app-recognition"><img src="web/assets/brands/eleon/icon-192.png" width="48" height="48" alt="Eleon app icon"><div><strong>Look for Eleon in the top-left corner.</strong><p>This is the app you just installed. If you chose Original above, you’ll see the penguin and “Case Workspace” instead.</p></div></div>
         <div class="photo-row"></div>
         <ol>
-          <li><strong>Settings → Mailbox → Connect</strong>: sign in with your Microsoft or Google account. Mail starts arriving within a minute.
+          <li><strong>Settings → Mailbox → Connect</strong>: sign in with your Microsoft or Google account. Your folders appear as the first sync runs. A large mailbox can take a while.
             <span class="hint">"Need admin approval"? A Microsoft 365 administrator signs in once and ticks <em>Consent on behalf of your organization</em>.</span></li>
           <li><strong>Settings → Users → Invite</strong>: each colleague gets a link, sets their own password and connects their own mailbox.</li>
           <li><strong>Settings → Backups</strong>: check that a backup was made, and the off-site copy if you set one.</li>
           <li><strong>Settings → System health</strong>: everything should be green.</li>
-          <li><em>Optional</em> — <strong>Settings → License</strong>: a Pro or Business key adds AI, automation, reports and response times, Microsoft Teams, WhatsApp, deals, and (Business) sign-in with Microsoft, audit log and legal hold. The first 30 days after the paid modules are installed are a free trial.</li>
+          <li><strong>Try a case:</strong> open an email, create a case, then add a related conversation. You can keep a customer thread, a supplier thread and your team’s discussion together.</li>
+          <li><em>Optional</em> — configure AI in Settings for case summaries and draft replies. It uses the provider or local endpoint you choose.</li>
         </ol>
         <details class="stuck"><summary>Stuck?</summary><dl>
           <dt>Microsoft: <em>not configured as a multi-tenant application</em></dt>
@@ -670,7 +692,7 @@ dialog.guide::backdrop { background: rgba(10, 15, 25, .65); }
     </section>
   </main>
 </div>
-<footer><span data-brand="product"></span> by <span data-brand="company"></span> · open source (AGPL) · this page works offline and sends nothing anywhere</footer>
+<footer><span data-brand="product">Eleon</span> · <a href="https://github.com/giorgosbil/eleon" target="_blank" rel="noopener">Source code</a> · AGPL-3.0-only · © George Bilalis<br>This guide opens offline. Settings stay in this browser until you copy or download your .env file.</footer>
 
 <dialog class="guide" id="guide" aria-labelledby="guideTitle">
   <div class="g-head"><h2 id="guideTitle"></h2><button type="button" class="g-close" id="gClose" aria-label="Close">×</button></div>
@@ -690,8 +712,8 @@ dialog.guide::backdrop { background: rgba(10, 15, 25, .65); }
 <script>
 (() => {
   'use strict';
-  // Names are placeholders until they are decided: change them here only.
-  const BRAND = { product: 'product_name', company: 'company_name', repo: 'https://github.com/company_name/product_name' };
+  // Product identity and the public source repository.
+  const BRAND = { product: 'Eleon', company: 'George Bilalis', repo: 'https://github.com/giorgosbil/eleon' };
   const WEB_PATH = '/other_things/web/';                // where the app answers (docker/apache.conf)
   const PING = 'assets/icons/favicon-32.png';           // a small picture the app serves: loading it = the app answers
   const IMG_DIR = 'welcome-images/';                    // the pictures of the guides, next to this file
@@ -747,13 +769,13 @@ dialog.guide::backdrop { background: rgba(10, 15, 25, .65); }
   };
 
   $$('[data-brand]').forEach((el) => { el.textContent = BRAND[el.dataset.brand] || ''; });
-  document.title = 'Welcome to ' + BRAND.product + ' — setup guide';
+  document.title = 'Set up ' + BRAND.product;
   // The camera icon on every pictures button.
   $$('.btn.photos').forEach((b) => b.insertAdjacentHTML('afterbegin', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h3l2-3h6l2 3h3a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="4"/></svg>'));
 
   // ------------------------------------------------------------ state
   const DEFAULTS = { os: /Win/.test(navigator.platform) ? 'windows' : /Mac/.test(navigator.platform) ? 'mac' : 'linux', mode: 'local',
-    host: '', httpPort: 8080, httpsPort: 8443, msId: '', msSecret: '', msPersonal: false, gId: '', gSecret: '',
+    productBrand: 'eleon', host: '', httpPort: 8080, httpsPort: 8443, msId: '', msSecret: '', msPersonal: false, gId: '', gSecret: '',
     backups: true, keep: 14, offsite: '', backupPw: '', dbMem: '', push: '', ai: '', aiDaily: 20,
     folder: '',         // where the app folder is (only for the commands, not in the .env)
     existing: false,    // the fields came from a loaded .env (whose passwords are only in memory)
@@ -807,6 +829,7 @@ dialog.guide::backdrop { background: rgba(10, 15, 25, .65); }
       ['ECW_DB_PASSWORD', kept('ECW_DB_PASSWORD'), 'Passwords: empty ones are generated by the start script the first time.'],
       ['ECW_DB_ROOT_PASSWORD', kept('ECW_DB_ROOT_PASSWORD')],
       ['ECW_SETUP_TOKEN', kept('ECW_SETUP_TOKEN')],
+      ['ECW_PRODUCT_BRAND', state.productBrand === 'original' ? 'original' : 'eleon', 'App name and icon on this installation only.'],
       ['ECW_HTTP_PORT', String(d.httpPort), 'Where it runs (welcome.html). 0.0.0.0 = every device on the network.'],
       ['ECW_BIND_ADDRESS', d.server ? '0.0.0.0' : '127.0.0.1'],
       ['ECW_BASE_URL', d.base],
@@ -1235,6 +1258,7 @@ dialog.guide::backdrop { background: rgba(10, 15, 25, .65); }
     loadedEnv = { lines: text.replace(/\r\n/g, '\n').replace(/\n+$/, '').split('\n'), values: v };
     let base = null; try { base = new URL(v.ECW_BASE_URL || ''); } catch (_) {}
     Object.assign(state, {
+      productBrand: v.ECW_PRODUCT_BRAND === 'eleon' ? 'eleon' : 'original',
       mode: v.ECW_BIND_ADDRESS === '0.0.0.0' ? 'server' : 'local',
       host: base && !LOCALHOST.test(base.hostname) ? base.hostname : state.host,
       httpPort: v.ECW_HTTP_PORT || 8080, httpsPort: v.ECW_HTTPS_PORT || 8443,

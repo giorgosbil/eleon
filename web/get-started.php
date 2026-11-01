@@ -52,7 +52,7 @@ $org = $st->fetch() ?: ['name' => '', 'timezone' => 'UTC'];
 $firstName = explode(' ', trim((string)($context['user']['name'] ?? '')))[0] ?: 'there';
 $hidden = ecw_getting_started_hidden($userId);
 ?>
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Get started — Case Workspace</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Get started — <?= htmlspecialchars(ecw_product_brand()['name'], ENT_QUOTES, 'UTF-8') ?></title>
 <link rel="stylesheet" href="<?= $h($base) ?>assets/app.css?v=<?= filemtime(__DIR__ . '/assets/app.css') ?>"><link rel="stylesheet" href="<?= $h($base) ?>assets/auth.css"></head>
 <body class="page-body"><?php require __DIR__ . '/partials/nav.php'; ?>
 <main class="page gs-page btn-scope">
