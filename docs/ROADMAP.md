@@ -1,12 +1,13 @@
-# First public Free-core release
+# Eleon roadmap
 
-- [x] Publish the product website and interactive case demo.
-- [x] Establish the public project repository and contribution/reporting guidance.
-- [ ] Separate Pro and Business implementations from the Free core.
-- [ ] Verify that the Free core runs with no paid components installed.
-- [ ] Review exported source, documentation, examples and third-party notices.
-- [ ] Document and test a clean Docker installation and provider connections.
-- [ ] Publish a versioned Free-core source release and installation guide.
-- [ ] Enable installation/download links on eleon.app.
+- [x] Public website and interactive demo.
+- [x] Full current source, including optional AI and collaboration.
+- [x] Community build with no paid license/trial restrictions.
+- [x] Fresh Docker installation, account setup and access checks.
+- [ ] Public feedback and further provider/integration verification.
+- [ ] Improved deployment and upgrade documentation.
+- [ ] Reproducible CI integration tests and release automation.
+- [ ] Managed hosting, with support and migration services.
 
-This is a release-preparation checklist, not a promised delivery schedule.
+All features remain available for self-hosting. Paid services support operation
+and adoption of the software. This roadmap is not a promised delivery schedule.

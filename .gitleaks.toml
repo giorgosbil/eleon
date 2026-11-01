@@ -1,0 +1,10 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Public Microsoft Enterprise Token Store application ID, not a secret"
+regexes = ['''ab3be6b7-f5df-413d-ac2d-abf1e3fd9c0b''']
+
+[[allowlists]]
+description = "Reviewed upstream Online3DViewer minified math/parser code: two generic-key false positives"
+paths = ['''cad_viewer/third_party/o3dv\.min\.js$''']

@@ -1,0 +1,14 @@
+/* Support agent: the small robot button (admins) and its message. */
+.sa-send .fa-robot { opacity: .75; }
+.sa-send:hover .fa-robot { opacity: 1; }
+.sa-send.busy .fa-robot { animation: sa-pulse 1s ease-in-out infinite; }
+.sa-send.done .fa-robot { color: var(--ok, #16a34a); opacity: 1; }
+@keyframes sa-pulse { 50% { opacity: .3; } }
+.sa-toast { position: fixed; right: 16px; bottom: 16px; z-index: 1000; max-width: 420px; padding: 10px 14px; border-radius: 8px;
+  background: var(--bg, #fff); color: var(--text, #0d0d0d); border: 1px solid var(--border, #e5e7eb); border-left: 4px solid var(--ok, #16a34a);
+  box-shadow: 0 10px 30px rgba(16, 24, 40, .14); font-size: 13px; }
+.sa-toast.bad { border-left-color: var(--danger, #dc2626); }
+.sa-toast[hidden] { display: none; }
+.sa-toast a { margin-left: 6px; }
+/* Settings → Support agent: the address and token fields, wide enough to read. */
+#saForm :is(input[type=url], input[type=password]) { display: block; width: 100%; max-width: 520px; margin: 4px 0 8px; }

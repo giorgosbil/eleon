@@ -1,0 +1,7 @@
+# Files are stored exactly as they are, on every PC: no line-ending changes.
+* -text
+
+# Except what runs inside Linux (Docker): always LF, or it breaks with "\r: not found".
+*.sh         text eol=lf
+Dockerfile   text eol=lf
+docker/**    text eol=lf

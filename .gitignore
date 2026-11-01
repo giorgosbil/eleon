@@ -1,4 +1,4 @@
-# Public exports must never contain local settings or runtime data.
+# Never in git: secrets, data, build output, this PC's tools.
 .env
 .env.*
 !.env.example
@@ -6,11 +6,31 @@ config.local.php
 *.key
 *.pem
 *.license
-vendor/
-node_modules/
-storage/
-cache/
-logs/
-backups/
-exports/
-dist/
+caddy-root.crt
+
+# Data and runtime folders (each PC has its own)
+/vendor/
+/storage/
+/cache/
+/logs/
+/backups/
+/backups-offsite/
+/updates/
+
+# Built packages (made again by tools/release/Release.ps1)
+/exports/
+/dist/
+
+# Local tools and caches
+/.claude/
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+
+# Data moved between PCs (DataPush / DataPull): never in git, wherever it is put by mistake.
+ecw-data-*.zip
+ecw-data-*.zip.part
+
+# Playwright for the browser tests (npm install --prefix tests/browser)
+/tests/browser/node_modules/

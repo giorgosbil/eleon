@@ -1,0 +1,17 @@
+.git
+.env
+.env.*
+!.env.example
+/vendor
+storage
+cache
+logs
+backups
+exports
+local-export
+*.zip
+*.tar.gz
+**/node_modules
+updates
+dist
+backups-offsite

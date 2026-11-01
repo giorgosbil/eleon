@@ -1,0 +1,212 @@
+:root[data-theme="dark"] { color-scheme:dark; --bg:#1d2633; --bg-alt:#151c27; --border:#3a485a; --text:#edf2f8; --text-2:#c1ccda; --muted:#9baabd; --accent:#8ab7ff; --accent-soft:#293d59; }
+:root[data-theme="mild"] { color-scheme:light; --bg:#fffdf7; --bg-alt:#eeeae2; --border:#d8d3c7; --text:#32382f; --text-2:#58604f; --muted:#737b68; --accent:#526f46; --accent-soft:#e4ebdf; }
+:root[data-theme="mist"] { color-scheme:light; --bg:#fbfcfe; --bg-alt:#e9eef4; --border:#d3dbe5; --text:#2d3542; --text-2:#4f5b6b; --muted:#6d7a8a; --accent:#4d6f94; --accent-soft:#e1e9f2; }
+:root[data-theme="light"] { color-scheme:light; }
+:root[data-theme="sand"] { color-scheme:light; --bg:#fffaf2; --bg-alt:#f3eadb; --border:#e2d4bd; --text:#3d3427; --text-2:#5f5240; --muted:#857560; --accent:#a0612b; --accent-soft:#f3e2cf; }
+:root[data-theme="graphite"] { color-scheme:dark; --bg:#232427; --bg-alt:#1a1b1d; --border:#3b3d42; --text:#ececee; --text-2:#c4c5ca; --muted:#9a9ba2; --accent:#9fc2a8; --accent-soft:#2f3a33; }
+:root[data-theme="graphite"] .message-body { color:inherit; }
+
+/* Accent colour chosen by the person (appearance.js sets --custom-accent). */
+:root[data-custom-accent] { --accent:var(--custom-accent); --accent-soft:color-mix(in srgb, var(--custom-accent) 16%, var(--bg)); }
+
+/* Email text size. */
+.message-body, .message-quoted, .bubble-body, .bubble-quoted { font-size:var(--mail-font, 14px) !important; }
+
+/* Message corners. */
+:root[data-corners="square"] :is(.message, .bubble, .appearance-preview p) { border-radius:4px !important; }
+:root[data-corners="round"] :is(.message, .bubble, .appearance-preview p) { border-radius:22px !important; }
+
+/* Compact: tighter mail list, messages and timeline. */
+:root[data-density="compact"] .thread-row { padding:5px 12px !important; }
+/* Settings → Appearance: no preview line (the first words) in the email list, so the rows are thinner. */
+:root[data-list-preview="off"] .thread-row .row-preview { display:none; }
+:root[data-list-preview="off"] .thread-row { padding-top:6px; padding-bottom:6px; }
+.ap-list-preview { margin-top:12px; display:block !important; line-height:1.5; }
+.ap-list-preview input { margin:0 6px 0 0; vertical-align:-2px; }
+.ap-list-preview .muted { display:block; margin-left:20px; }
+.ap-badge-mode { display:block; margin-top:12px; max-width:320px; }
+.ap-badge-note { margin:4px 0 0; }
+/* Email & writing and Notifications: one column of choices, no preview beside it. */
+form[data-page] .appearance-fields { max-width:660px; }
+/* Colour rules as text only: the row looks like any other, its sender and subject take the colour. */
+:root[data-rule-style="text"] .thread-row.colored { border-left-color:transparent; background:transparent; }
+:root[data-rule-style="text"] .thread-row.colored:hover { background:var(--bg-alt); }
+:root[data-rule-style="text"] .thread-row.colored.active { background:var(--accent-soft); border-left-color:var(--accent); }
+:root[data-rule-style="text"] .thread-row.colored :is(.row-from, .row-subject) { color:var(--rule-color) !important; }
+:root[data-density="compact"] .message { margin:6px 16px 6px 0; }
+:root[data-density="compact"] .message-body { padding:10px 12px !important; }
+:root[data-density="compact"] :is(.message-head, .message-header) { padding-top:8px !important; padding-bottom:6px !important; }
+:root[data-density="compact"] .bubble-head { padding:5px 10px 4px !important; }
+:root[data-density="compact"] .bubble-body { padding:5px 10px !important; }
+.reading, .tl-scroll, .composer-history, .appearance-preview { background-color:var(--mail-canvas); }
+:root[data-thread-background="dots"] :is(.reading,.tl-scroll,.composer-history,.appearance-preview) { background-image:radial-gradient(circle, color-mix(in srgb,var(--mail-canvas-text) 13%,transparent) 1px,transparent 1px); background-size:18px 18px; }
+:root[data-thread-background="lines"] :is(.reading,.tl-scroll,.composer-history,.appearance-preview) { background-image:repeating-linear-gradient(135deg,transparent 0 18px,color-mix(in srgb,var(--mail-canvas-text) 7%,transparent) 18px 19px); }
+.message.incoming, .bubble.incoming, .preview-received { background:var(--mail-received); color:var(--mail-received-text); }
+.message.outgoing, .bubble.outgoing, .preview-sent { background:var(--mail-sent); color:var(--mail-sent-text); border-color:var(--border); }
+:is(.message,.bubble) :is(.message-from,.message-meta,.message-when,.bubble-from,.bubble-email,.bubble-time) { color:inherit; }
+:is(.message,.bubble) :is(.message-meta,.message-when,.bubble-email,.bubble-time) { opacity:.8; }
+input, select, textarea, .ql-toolbar, .ql-container { background-color:var(--bg); color:var(--text); }
+#caseComposerWindow, .composer-history { color:var(--text); }
+#caseComposerWindow { background:var(--bg); }
+:root[data-theme="dark"] .message-body { color:inherit; }
+:root:is([data-theme="dark"],[data-theme="graphite"]) .ql-snow .ql-stroke { stroke:var(--text-2); }
+:root:is([data-theme="dark"],[data-theme="graphite"]) .ql-snow .ql-fill { fill:var(--text-2); }
+.appearance-layout { display:grid; grid-template-columns:minmax(260px,1fr) minmax(260px,1fr); gap:24px; align-items:start; }
+.appearance-fields { display:grid; gap:14px; min-width:0; }
+.appearance-fields label { display:grid; gap:5px; font-size:13px; }
+.ap-group { margin:0; padding:14px 16px 16px; border:1px solid var(--border); border-radius:12px; background:var(--bg); display:grid; gap:12px; min-width:0; }
+/* The title sits inside the box like the other settings panels, not on its border (float takes the legend out of the outline). */
+.ap-group legend { float:left; width:100%; margin:0 0 2px; padding:0; font-weight:600; font-size:16px; color:var(--text); }
+.ap-group legend + * { clear:both; }
+.ap-colors { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px; }
+.ap-color { display:flex !important; flex-direction:column; align-items:center; gap:4px !important; text-align:center; font-size:12px !important; color:var(--text-2); }
+.ap-color input[type="color"], .ap-optional-color input[type="color"] { width:100%; height:38px; padding:2px; border:1px solid var(--border); border-radius:8px; background:var(--bg); cursor:pointer; }
+.ap-optional-color { display:grid; grid-template-columns:1fr 64px; gap:10px; align-items:center; }
+.ap-optional-color .checkbox-label { display:flex !important; gap:8px; }
+.ap-optional-color input[type="color"]:disabled { opacity:.35; cursor:not-allowed; }
+.ap-bg-tiles { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px; }
+.ap-bg-tile { display:flex; flex-direction:column; align-items:center; gap:6px; padding:6px 6px 8px; border:1.5px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text-2); font:inherit; font-size:12px; cursor:pointer; }
+.ap-bg-tile.active { border-color:var(--accent); color:var(--text); font-weight:600; box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+.ap-bg-swatch { position:relative; width:100%; height:44px; border-radius:7px; background-color:var(--mail-canvas); overflow:hidden; }
+.ap-bg-dots .ap-bg-swatch { background-image:radial-gradient(circle, color-mix(in srgb,var(--mail-canvas-text) 22%,transparent) 1px,transparent 1px); background-size:9px 9px; }
+.ap-bg-lines .ap-bg-swatch { background-image:repeating-linear-gradient(135deg,transparent 0 7px,color-mix(in srgb,var(--mail-canvas-text) 14%,transparent) 7px 8px); }
+.ap-bg-doodles .ap-bg-swatch::after { content:''; position:absolute; inset:0; background:url('doodles-pattern.svg') 0 0/180px 180px; opacity:.22; }
+:root:is([data-theme="dark"],[data-theme="graphite"]) .ap-bg-doodles .ap-bg-swatch::after { filter:invert(1); }
+.ap-doodle-opts { display:grid; gap:10px; padding-top:4px; }
+.ap-doodle-opts[hidden] { display:none; }
+.ap-range output { float:right; font-variant-numeric:tabular-nums; color:var(--muted); }
+.ap-range input[type="range"] { width:100%; accent-color:var(--accent); }
+.ap-two { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+/* Writing emails: Font | Size | Colour on one row. */
+.ap-two.ap-font-row { grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto; align-items:end; }
+.ap-text-color { display:grid; gap:5px; font-size:13px; }
+.ap-text-color-row { display:flex; align-items:center; gap:8px; height:38px; }
+.ap-text-color-row input[type="color"] { width:44px; height:38px; padding:2px; border:1px solid var(--border); border-radius:8px; background:var(--bg); cursor:pointer; }
+.ap-text-color-row input[type="color"]:disabled { opacity:.35; cursor:not-allowed; }
+@media(max-width:760px) { .ap-two.ap-font-row { grid-template-columns:1fr 1fr; } .ap-two.ap-font-row > label:first-child { grid-column:1 / -1; } }
+.ap-text-color-row .checkbox-label { display:flex !important; align-items:center; gap:6px; margin:0; white-space:nowrap; }
+.ap-actions { margin-top:16px; display:flex; gap:8px; flex-wrap:wrap; }
+.appearance-preview { position:sticky; top:calc(var(--appnav-h, 0px) + 16px); display:flex; flex-direction:column; gap:12px; min-height:420px; padding:22px; border:1px solid var(--border); border-radius:14px; }
+.appearance-preview p { margin:0; padding:12px 14px; border-radius:12px; font-size:var(--mail-font, 14px); line-height:1.45; box-shadow:0 1px 2px #0000000f; }
+/* Writing emails: the composer shows the font and size the email is sent in (lib/compose.php ecw_outgoing_paragraphs). */
+#editor .ql-editor, #sigEditor .ql-editor, #profileEditor, .ap-compose-preview { font-family:var(--compose-font, 'Segoe UI', Helvetica, Arial, sans-serif); font-size:var(--compose-size, 11pt); line-height:1.4; }
+/* The person's own text colour, if chosen (signatures keep theirs). */
+#editor .ql-editor, .ap-compose-preview { color:var(--compose-color, var(--text)); }
+/* No colour here: the rule above gives it the chosen text colour (it used to be overridden with the theme's). */
+.ap-compose-preview { margin:10px 0 0; padding:10px 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg); }
+/* The look is .ot-input (app.css); here only its width in the Font / Size / Colour row. */
+.ap-size-input { width:100%; }
+.ap-color-off { opacity:.45; }
+.ap-reply-mode { display:grid; gap:6px; margin-top:14px; }
+.ap-reply-mode > span { font-weight:600; }
+.ap-reply-mode .checkbox-label { display:block !important; line-height:1.5; }
+.ap-reply-mode .checkbox-label .muted { display:block; margin-left:20px; }
+.ap-reply-mode input { margin:0 6px 0 0; vertical-align:-2px; }
+/* Settings → Signatures: Font and Size next to Bold / Italic (signatures.js), same height and look. */
+.quote-edit-toolbar select { flex:0 0 auto; width:auto; min-width:0; max-width:170px; height:30px; min-height:0; margin:0; padding:2px 26px 2px 8px; border:1px solid var(--border); border-radius:5px; background-color:var(--bg); color:var(--text); font-size:13px; line-height:1.2; box-sizing:border-box; cursor:pointer; }
+/* .stack button (the form's Save) adds a top margin, which pushed the toolbar buttons below the selects. */
+.quote-edit-toolbar { align-items:center; }
+.quote-edit-toolbar > *, .stack .quote-edit-toolbar button { margin:0; align-self:center; }
+.quote-edit-toolbar button { height:30px; box-sizing:border-box; }
+.ql-snow .ql-picker.ql-font { width:128px; }
+.ql-snow .ql-picker.ql-size { width:74px; }
+.preview-sent { margin-left:40px; }
+.preview-received { margin-right:40px; }
+.appearance-preview a { color:var(--accent); }
+@media(max-width:760px) { .appearance-layout { grid-template-columns:1fr; } .appearance-preview { position:static; min-height:0; order:-1; } .ap-bg-tiles { grid-template-columns:repeat(2, minmax(0,1fr)); } .ap-two { grid-template-columns:1fr; } }
+/* Outlook often embeds black text and white table cells. Let the chosen
+   bubble palette control text contrast without altering images or spacing. */
+:is(.message,.bubble) :is(.message-body,.message-quoted,.signature-content,.message-signature) { color:inherit; }
+:is(.message,.bubble) :is(.message-body:not(.is-designed),.message-quoted,.signature-content) * { background-color:transparent !important; }
+/* Keep annotation colors (notably inline red replies), adapting only black. */
+:root:is([data-theme="dark"],[data-theme="graphite"]) :is(.message-body:not(.is-designed),.message-quoted,.signature-content) :is([style*="color: rgb(0, 0, 0)"],[style*="color:rgb(0,0,0)"],[style*="color:#000"],[style*="color: #000"],[style*="color:black"],[style*="color: black"]) { color:inherit !important; }
+:is(.message,.bubble) :is(.message-body:not(.is-designed),.message-quoted,.signature-content) a { text-decoration:underline; }
+/* A designed email (a newsletter, app.js markDesigned): shown as its sender laid it out, its own
+   colours and buttons, on its own white page in every theme, like Outlook and Gmail. */
+:is(.message,.bubble) .message-body.is-designed { background:#fff; color:#1f2937; border-radius:8px; }
+:is(.message,.bubble) .message-body.is-designed :is(p, div) { margin-top:revert-layer; margin-bottom:revert-layer; }
+:root:is([data-theme="dark"],[data-theme="graphite"]) button.primary { color:#111d30; }
+#appearanceForm button { border:1px solid var(--border); border-radius:6px; padding:8px 12px; background:var(--bg); color:var(--text); }
+#appearanceForm button.primary { background:var(--accent); color:var(--bg); }
+
+/* Doodles: assets/doodles-pattern.svg (tools/doodles/build-pattern.mjs), recoloured
+   by appearance.js for the theme and the chosen colour / strength, as --doodle-image. */
+:root[data-thread-background="doodles"] :is(.reading,.tl-scroll,.composer-history,.appearance-preview) {
+  background-image:var(--doodle-image, none); background-repeat:repeat;
+  background-size:calc(520px * var(--doodle-scale, 1)) calc(520px * var(--doodle-scale, 1));
+}
+
+/* ------------------------------------------------ full customisation (appearance.js)
+   Each rule only works once its choice is made, so an untouched look stays as before. */
+/* Letters of the app. */
+:root[data-ui-font] body { font-family:var(--ui-font); }
+:root[data-ui-font] :is(input, select, textarea, button) { font-family:inherit; }
+/* Size of everything: zoom, as the app's sizes are in px. Zoom also enlarges vh, so the
+   full-height layouts and the tallest windows are divided back to fit the window. */
+:root[data-ui-scale] body { zoom:var(--ui-zoom); }
+:root[data-ui-scale] body:not(.page-body) { height:calc(100dvh / var(--ui-zoom)); }
+:root[data-ui-scale] .teams-page { height:calc(100dvh / var(--ui-zoom) - 56px); }
+:root[data-ui-scale] :is(.composer-window, #caseComposerWindow, .file-preview-overlay, .thread-popup, .dialog, .help-panel, .ooo-panel, .settings-side, .cases-split .case-preview) { max-height:calc((100dvh - 40px) / var(--ui-zoom)); }
+/* The font emails are read in and their line spacing (a newsletter keeps its own design). */
+:root[data-mail-family] :is(.message-body:not(.is-designed), .message-quoted, .bubble-body, .bubble-quoted, .appearance-preview p),
+:root[data-mail-family] :is(.message-body:not(.is-designed), .message-quoted, .bubble-body, .bubble-quoted) :not(code, pre, .fa, [class*="fa-"]) { font-family:var(--mail-family) !important; }
+:root[data-mail-line] :is(.message-body:not(.is-designed), .message-quoted, .bubble-body, .bubble-quoted, .appearance-preview p),
+:root[data-mail-line] :is(.message-body:not(.is-designed), .message-quoted, .bubble-body, .bubble-quoted) * { line-height:var(--mail-line) !important; }
+/* Top bar colours. */
+:root[data-custom-bar] .appnav { background:var(--bar-bg, var(--bg)); color:var(--bar-text, var(--text)); }
+:root[data-custom-bar] .appnav :is(.appnav-links a:not(.active), .appnav-brand, .appnav-who) { color:var(--bar-text, var(--text-2)); }
+:root[data-custom-bar] .appnav .appnav-links a:not(.active):hover { background:color-mix(in srgb, var(--bar-text, var(--text)) 12%, transparent); }
+/* Links, if not the accent colour. */
+:root[data-custom-link] :is(.page, .message-body:not(.is-designed), .message-quoted, .bubble-body, .appearance-preview, .settings-list, .grid) a:not(.button, .chip, [class*="btn"], [role="tab"], [role="menuitem"]) { color:var(--link-color) !important; }
+/* Buttons: shape, own colour, outline. */
+:root[data-button-shape] :is(button, .button, input[type="submit"], input[type="button"]):not(.ap-bg-tile, .ap-look-card, .ap-look-del, .ql-toolbar button, .ql-toolbar *) { border-radius:var(--btn-radius) !important; }
+:root[data-button-shape="square"] { --btn-radius:2px; }
+:root[data-button-shape="rounded"] { --btn-radius:8px; }
+:root[data-button-shape="pill"] { --btn-radius:999px; }
+:root[data-custom-button] :is(button.primary, .button.primary, input[type="submit"].primary) { background:var(--btn-color) !important; border-color:var(--btn-color) !important; color:var(--btn-text) !important; }
+:root[data-button-style="outline"] :is(button.primary, .button.primary, input[type="submit"].primary) { background:transparent !important; border:1.5px solid var(--btn-color, var(--accent)) !important; color:var(--btn-color, var(--accent)) !important; }
+/* Message edges (a ring or a shadow, so a case bubble keeps its coloured side line). */
+:root[data-bubble-edge="flat"] :is(.message, .bubble, .appearance-preview p) { box-shadow:none !important; border-top-color:transparent !important; border-right-color:transparent !important; border-bottom-color:transparent !important; }
+:root[data-bubble-edge="flat"] .message { border-left-color:transparent !important; }
+:root[data-bubble-edge="border"] :is(.message, .bubble, .appearance-preview p) { box-shadow:0 0 0 1px color-mix(in srgb, currentColor 30%, transparent) !important; }
+:root[data-bubble-edge="shadow"] :is(.message, .bubble, .appearance-preview p) { box-shadow:0 2px 10px #0000001f, 0 1px 2px #00000014 !important; border-top-color:transparent !important; border-right-color:transparent !important; border-bottom-color:transparent !important; }
+:root[data-bubble-edge="shadow"] .message { border-left-color:transparent !important; }
+
+/* Settings → Appearance: groups, saved looks and starting points. */
+.ap-fold { margin:0; }
+.ap-fold-body { display:grid; gap:12px; padding:12px 0 14px; }
+.ap-note { margin:0; }
+.ap-colors-2 { grid-template-columns:repeat(2, minmax(0,1fr)); }
+.ap-canvas { max-width:240px; }
+.ap-looks-block { display:grid; gap:8px; }
+.ap-looks-title { font-size:13px; font-weight:600; color:var(--text); }
+.ap-looks-empty, .ap-look-note { margin:0; }
+.ap-look-bad { color:var(--danger); }
+.ap-looks { display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:8px; }
+.ap-look { position:relative; min-width:0; }
+#appearanceForm .ap-look-card { display:flex; flex-direction:column; align-items:stretch; justify-content:flex-start; gap:6px; width:100%; padding:6px 6px 8px; border:1.5px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text-2); font-size:12px; text-align:center; }
+#appearanceForm .ap-look-card:hover { border-color:var(--muted); }
+#appearanceForm .ap-look-card.active { border-color:var(--accent); color:var(--text); font-weight:600; box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+.ap-look-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ap-look-swatch { position:relative; display:block; height:50px; border-radius:7px; overflow:hidden; background:var(--s-page); box-shadow:inset 0 0 0 1px #0000001a; }
+.ap-look-swatch i { position:absolute; display:block; }
+.ap-look-swatch .s-bar { left:0; right:0; top:0; height:9px; background:var(--s-bar); box-shadow:0 1px 0 #0000001a; }
+.ap-look-swatch .s-canvas { left:6px; right:6px; top:14px; bottom:6px; border-radius:4px; background:var(--s-canvas); }
+.ap-look-swatch .s-recv { left:4px; top:4px; width:55%; height:8px; border-radius:4px; background:var(--s-received); box-shadow:0 0 0 1px #00000012; }
+.ap-look-swatch .s-sent { right:4px; top:15px; width:55%; height:8px; border-radius:4px; background:var(--s-sent); box-shadow:0 0 0 1px #00000012; }
+.ap-look-swatch .s-btn { right:10px; bottom:9px; width:20px; height:6px; border-radius:3px; background:var(--s-accent); }
+#appearanceForm .ap-look-del { position:absolute; top:3px; right:3px; padding:2px 6px; font-size:11px; border-radius:6px; background:var(--bg); color:var(--text-2); opacity:0; }
+.ap-look:hover .ap-look-del, #appearanceForm .ap-look-del:focus-visible { opacity:1; }
+@media (hover:none) { #appearanceForm .ap-look-del { opacity:1; } }
+.ap-look-save { display:flex; gap:8px; flex-wrap:wrap; }
+.ap-look-save input { flex:1 1 180px; min-width:0; }
+/* The preview: a small piece of the app (top bar, a panel, a link, buttons) above the messages. */
+.ap-sample { border:1px solid var(--border); border-radius:10px; overflow:hidden; background:var(--bg-alt); color:var(--text); font-size:13px; }
+.ap-sample-bar { display:flex; align-items:center; gap:10px; padding:7px 12px; background:var(--bar-bg, var(--bg)); color:var(--bar-text, var(--text-2)); border-bottom:1px solid var(--border); }
+.ap-sample-bar b { color:var(--bar-text, var(--text)); margin-right:6px; }
+.ap-sample-bar .on { padding:2px 8px; border-radius:6px; background:var(--accent-soft); color:var(--accent); font-weight:600; }
+.ap-sample-page { padding:12px; }
+.ap-sample-panel { display:grid; gap:4px; padding:12px 14px; background:var(--bg); border:1px solid var(--border); border-radius:10px; }
+.ap-sample-sub { font-size:12px; color:var(--text-2); }
+.appearance-preview .ap-sample a { color:var(--link-color, var(--accent)); }
+.ap-sample-btns { display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }

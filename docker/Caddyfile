@@ -1,0 +1,19 @@
+# Optional HTTPS in front of the app (compose profile "https").
+# Set up with scripts/https-setup.ps1 / https-setup.sh, which fills these in .env:
+#   ECW_HTTPS_HOSTS   names/addresses people use, e.g. "localhost, 192.168.2.2, cases.office.lan"
+#   ECW_PROXY_SECRET  lets the app trust the client address this proxy passes on
+# Certificates come from Caddy's own local authority; browsers trust them once
+# its root certificate is installed (the setup script exports it).
+{
+	local_certs
+	admin off
+}
+
+{$ECW_HTTPS_HOSTS:localhost} {
+	tls internal
+	encode zstd gzip
+	reverse_proxy web:80 {
+		header_up X-Forwarded-Proto https
+		header_up X-ECW-Proxy {$ECW_PROXY_SECRET}
+	}
+}

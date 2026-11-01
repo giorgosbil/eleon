@@ -1,0 +1,922 @@
+/*
+ * Email Case Workspace — mail UI.
+ *
+ * Desktop-first, as the step specifies: three fixed panes on one viewport-height
+ * grid, each scrolling independently. The list and reading panes must scroll
+ * separately or the thread list jumps back to the top every time a message is
+ * opened.
+ *
+ * System font stack rather than a webfont: no external request, nothing to
+ * block first paint, and this is a tool people keep open all day.
+ */
+
+:root {
+  --bg: #ffffff;
+  --bg-alt: #f7f8fa;
+  --border: #e5e7eb;
+  --text: #0d0d0d;
+  --text-2: #4b5563;
+  --muted: #9ca3af;
+  --accent: #0057ff;
+  --accent-soft: #eaf0ff;
+  --danger: #dc2626;
+  --ok: #16a34a;
+  --radius: 8px;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  /* Pane widths: read by .panes' grid-template-columns, written by
+     paneResizer.js (and restored pre-paint by the inline script in <head>). */
+  --ot-nav-w: 220px;
+  --ot-list-w: 380px;
+  /* 0 by default: the details pane stays out of the grid until a thread has
+     actually been opened (or focused, in the case timeline). */
+  --ot-details-w: 0px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+button { font: inherit; cursor: pointer; }
+
+/* ----------------------------------------------------------------- selects
+ * Shared by every <select> in the app (mail, cases, settings) so a dropdown
+ * never falls back to the browser default. The chevron is
+ * a mid grey: an image cannot follow the text colour, and this grey shows on
+ * the light and the dark themes alike. */
+.ot-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  max-width: 100%;
+  min-width: 0;
+  padding: 7px 28px 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background-color: var(--bg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238b93a1' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 10px 6px;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ot-select:hover { border-color: var(--muted); }
+.ot-select:focus-visible { outline: 2px solid var(--accent-soft); outline-offset: 1px; border-color: var(--accent); }
+.ot-select:disabled { opacity: .55; cursor: not-allowed; }
+
+/* ------------------------------------------------------------------ inputs
+ * A typed field (number, text) that sits next to .ot-select and looks like it:
+ * same border, padding, corners and theme colours, so it never shows as a bare
+ * browser box. */
+.ot-input {
+  max-width: 100%;
+  min-width: 0;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background-color: var(--bg);
+  color: var(--text);
+  font: inherit;
+  box-sizing: border-box;
+}
+.ot-input:hover { border-color: var(--muted); }
+.ot-input:focus-visible { outline: 2px solid var(--accent-soft); outline-offset: 1px; border-color: var(--accent); }
+.ot-input:disabled { opacity: .55; cursor: not-allowed; }
+
+/* ---------------------------------------------------------- field fallback
+ * A field with no style of its own (a module page, a box built by a script)
+ * still gets the .ot-input look instead of the browser's grey inset box.
+ * :where() weighs nothing, so any rule written for a field wins over this. */
+:where(input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="hidden"], [type="submit"], [type="button"], [type="reset"], [type="image"]), select, textarea) {
+  padding: 6px 9px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background-color: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+:where(input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="hidden"], [type="submit"], [type="button"], [type="reset"], [type="image"]), select, textarea):focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+
+/* Every dropdown gets the .ot-select arrow, also the ones another rule styles
+ * with its own border and padding. !important because many of those rules use
+ * the background shorthand, which would wipe the arrow; the right padding keeps
+ * the text clear of it. A list box (multiple or size) has no arrow. */
+select:not([multiple]):not([size]) {
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238b93a1' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 9px center !important;
+  background-size: 10px 6px !important;
+  padding-right: 28px !important;
+  cursor: pointer;
+}
+
+/* ------------------------------------------------------------------ topbar */
+.topbar {
+  display: flex; align-items: center; gap: 16px;
+  padding: 10px 16px; border-bottom: 1px solid var(--border);
+  background: var(--bg); flex: 0 0 auto;
+}
+.brand { font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; }
+.search { flex: 1 1 auto; display: flex; gap: 6px; max-width: 760px; }
+.search input {
+  flex: 1; padding: 7px 10px; border: 1px solid var(--border);
+  border-radius: 6px; font: inherit;
+}
+.search input:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+.topbar-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.topbar button, .search button {
+  padding: 7px 12px; border: 1px solid var(--border);
+  background: var(--bg); border-radius: 6px; color: var(--text-2);
+}
+.topbar button.primary, .dialog .primary, .composer .primary {
+  background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600;
+}
+.menu { position: relative; }
+.menu summary { list-style: none; cursor: pointer; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; }
+.menu summary::-webkit-details-marker { display: none; }
+.menu-body {
+  position: absolute; right: 0; top: 110%; z-index: 20; width: 220px;
+  background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: 0 4px 16px rgba(0,0,0,.1); padding: 12px; display: grid; gap: 10px;
+}
+.menu-body label { display: grid; gap: 4px; font-size: 13px; color: var(--text-2); }
+.menu-item {
+  display: block; width: 100%; text-align: left; padding: 7px 4px; border: 0; background: transparent;
+  font: inherit; font-size: 13px; color: var(--text); cursor: pointer; border-radius: 4px;
+}
+.menu-item:hover { background: var(--bg-alt); }
+.menu-item.danger { color: var(--danger); }
+
+/* ------------------------------------------------------------------- panes */
+.panes {
+  flex: 1 1 auto; display: grid; position: relative;
+  grid-template-columns: var(--ot-nav-w) var(--ot-list-w) 1fr var(--ot-details-w);
+  min-height: 0;                     /* lets the children actually scroll */
+}
+.pane { min-height: 0; min-width: 0; position: relative; overflow-y: auto; overflow-x: hidden; border-right: 1px solid var(--border); }
+.pane.details { border-right: 0; }
+
+/* ---------------------------------------------------- pane resize/collapse */
+.pane-toolbar { display: flex; justify-content: flex-end; padding: 6px 6px 0; }
+.pane-collapse-btn {
+  border: 0; background: transparent; color: var(--muted); font-size: 13px;
+  line-height: 1; padding: 4px 7px; border-radius: 6px;
+}
+.pane-collapse-btn:hover { background: #eceef2; color: var(--text-2); }
+.list-header-right { display: flex; align-items: baseline; gap: 6px; }
+
+.pane-resize-handle {
+  position: absolute; top: 0; bottom: 0; width: 6px; z-index: 4;
+  cursor: col-resize; background: transparent;
+}
+.pane-resize-handle.side-right { right: -3px; }
+.pane-resize-handle.side-left { left: -3px; }
+.pane-resize-handle:hover, .pane-resize-handle.dragging { background: var(--accent-soft); }
+.pane-resize-handle:focus-visible { background: var(--accent-soft); outline: none; }
+.pane-resize-handle[hidden] { display: none; }
+
+.pane-expand-tab {
+  position: absolute; top: 50%; transform: translateY(-50%); z-index: 5;
+  width: 14px; height: 48px; padding: 0; border: 1px solid var(--border);
+  border-radius: 0 6px 6px 0; background: var(--bg); color: var(--muted); font-size: 10px;
+  display: flex; align-items: center; justify-content: center;
+}
+.pane-expand-tab.side-left { border-radius: 6px 0 0 6px; }
+.pane-expand-tab:hover { background: var(--bg-alt); color: var(--text-2); }
+.pane-expand-tab[hidden] { display: none; }
+.nav { background: var(--bg-alt); padding: 12px 8px; }
+.nav-section { margin-bottom: 18px; }
+.nav-title {
+  font-size: 11px; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--muted); padding: 0 8px 6px;
+}
+.nav-list { list-style: none; margin: 0; padding: 0; }
+.nav-item {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  width: 100%; text-align: left; padding: 6px 8px; border: 0; border-radius: 6px;
+  background: transparent; color: var(--text-2);
+}
+.nav-item:hover { background: #eceef2; }
+.nav-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.nav-item .count { font: 500 11px/1 var(--mono); color: var(--muted); }
+.nav-item.active .count { color: var(--accent); }
+.nav-status { font-size: 12px; color: var(--muted); padding: 8px; border-top: 1px solid var(--border); }
+.nav-status.warn { color: var(--danger); }
+
+/* --------------------------------------------------------------- list pane */
+.list-header {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 12px 14px 8px; font-weight: 600;
+  position: sticky; top: 0; background: var(--bg); z-index: 2;
+}
+.quick-filters { display: flex; gap: 6px; padding: 0 14px 10px; flex-wrap: wrap; }
+.chip {
+  padding: 3px 9px; font-size: 12px; border: 1px solid var(--border);
+  border-radius: 999px; background: var(--bg); color: var(--text-2);
+}
+.chip.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.thread-list { list-style: none; margin: 0; padding: 0; }
+.thread-row {
+  display: block; width: 100%; text-align: left; border: 0; background: transparent;
+  padding: 8px 14px; border-bottom: 1px solid var(--border); border-left: 3px solid transparent;
+}
+.thread-row:hover { background: var(--bg-alt); }
+.thread-row.active { background: var(--accent-soft); border-left-color: var(--accent); }
+.thread-row.unread .row-from, .thread-row.unread .row-subject { font-weight: 700; color: var(--text); }
+/* Row target: 52-68px total (8+8 padding + three ~17px lines). Every line stays
+   single-line (nowrap + ellipsis) — wrapping is what turns a list into a wall. */
+.row-top, .row-subject, .row-preview { line-height: 1.3; }
+.row-top { display: flex; justify-content: space-between; gap: 10px; }
+.row-from { font-size: 13px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row-time { font: 500 11px/1.5 var(--mono); color: var(--muted); white-space: nowrap; }
+.row-subject { font-size: 13px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row-preview { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row-markers { display: flex; gap: 6px; align-items: center; margin-top: 3px; flex-wrap: wrap; }
+.marker { font-size: 11px; color: var(--muted); }
+.case-badge {
+  font: 500 11px/1.4 var(--mono); background: var(--accent-soft); color: var(--accent);
+  padding: 2px 6px; border-radius: 4px; white-space: nowrap;
+}
+.count-badge { font: 500 11px/1.4 var(--mono); color: var(--muted); }
+.list-footer { padding: 14px; text-align: center; color: var(--muted); font-size: 13px; }
+
+/* ------------------------------------------------------------ reading pane */
+.empty { padding: 60px 20px; text-align: center; color: var(--muted); }
+.thread { padding: 18px 22px 60px; }
+.thread-header {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
+  border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 8px;
+}
+.thread-header h1 { font-size: 19px; margin: 0; letter-spacing: -0.01em; }
+.thread-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.thread-actions button, .thread-actions .thread-link-btn {
+  padding: 5px 10px; border: 1px solid var(--border); background: var(--bg);
+  border-radius: 6px; color: var(--text-2); font-size: 13px;
+}
+/* A link that looks like the buttons beside it (Open Case: it can open in a new tab). */
+.thread-actions .thread-link-btn { display: inline-flex; align-items: center; font-family: inherit; line-height: normal; text-decoration: none; cursor: pointer; }
+.thread-actions .thread-link-btn[hidden] { display: none; }
+.thread-actions .thread-link-btn:hover { border-color: var(--border-strong, var(--accent)); color: var(--text); }
+
+/* Quiet conversation bubbles: outgoing mail is indented from the left.
+   Gap between messages is 8-12px, not a large card-style separator. */
+#messageList { padding: 4px 0 16px; }
+/* Between two conversations (app.js showThreadLoading). Fades in after a beat, so a quick load never flashes it. */
+.thread-loading { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 56px 16px; color: var(--muted); font-size: 14px; animation: thread-loading-in .2s ease .12s both; }
+.thread-loading .fa-spin { font-size: 20px; color: var(--accent); }
+.thread-loading.failed { animation: none; color: var(--text-2); }
+@keyframes thread-loading-in { from { opacity: 0; } }
+/* A saved draft reply inside its conversation (app.js threadDraftCard), like Outlook's [Draft] */
+.thread-draft { margin: 8px 16px; padding: 10px 14px; border: 1px dashed #e0a3a3; border-left: 3px solid #c92a2a; border-radius: 8px; background: color-mix(in srgb, #c92a2a 4%, var(--bg)); cursor: default; }
+.thread-draft-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; font-size: 13px; }
+.thread-draft-tag { color: #c92a2a; font-weight: 700; }
+/* Scheduled (here or in Outlook): on its way at a set time, not unfinished, so blue rather than draft red. */
+.thread-draft.scheduled, .thread-draft.scheduled-remote { border-color: #9db8e8; border-left-color: #2f5aa8; background: color-mix(in srgb, #2f5aa8 5%, var(--bg)); }
+.thread-draft.scheduled .thread-draft-tag, .thread-draft.scheduled-remote .thread-draft-tag { color: #2f5aa8; }
+:root:is([data-theme="dark"],[data-theme="graphite"]) .thread-draft:is(.scheduled, .scheduled-remote) { border-color: #3b5788; border-left-color: #7aa2f7; }
+:root:is([data-theme="dark"],[data-theme="graphite"]) .thread-draft:is(.scheduled, .scheduled-remote) .thread-draft-tag { color: #9bb8f5; }
+.thread-draft.failed .thread-draft-tag { background: #c92a2a; color: #fff; padding: 0 6px; border-radius: 4px; }
+.thread-draft-who { color: var(--text-2); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 auto; }
+.thread-draft-when { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.thread-draft-text { margin: 6px 0 8px; color: var(--text); font-size: 13.5px; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.thread-draft-actions { display: flex; gap: 6px; align-items: center; }
+.thread-draft-actions button { padding: 4px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text-2); font: inherit; font-size: 12.5px; cursor: pointer; }
+.thread-draft-actions button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+:root:is([data-theme="dark"],[data-theme="graphite"]) .thread-draft { border-color: #6b2b2b; border-left-color: #f87171; }
+:root:is([data-theme="dark"],[data-theme="graphite"]) .thread-draft-tag { color: #f87171; }
+.message { border: 1px solid #e0e5eb; border-radius: 14px; margin: 10px 24px 10px 0; overflow: hidden; background: #fff; box-shadow: 0 1px 2px rgb(20 35 50 / 3%); min-width: 0; }
+.message:first-child { margin-top: 0; }
+.message.incoming { border-top-left-radius: 5px; }
+.message.outgoing { margin-left: 24px; margin-right: 0; background: #f2f6fa; border-color: #d8e2ec; border-top-right-radius: 5px; }
+.message.removed { opacity: .6; }
+
+/* Collapsed by default: "Sender · time" is the whole header. Older messages in
+   a thread stay collapsed; opening one reveals From/To/Cc/Date without ever
+   permanently showing the full header block. */
+.message-head { padding: 8px 16px; background: transparent; border-bottom: 1px solid rgb(100 120 140 / 10%); }
+.message-summary { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; cursor: pointer; }
+.message-summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.message-from { font-weight: 600; font-size: 13px; overflow-wrap: anywhere; min-width: 0; }
+.message-when { font: 500 11px/1.4 var(--mono); color: var(--muted); white-space: nowrap; }
+.message-meta { font-size: 12px; color: var(--muted); margin-top: 6px; word-break: break-word; }
+.meta-line { display: flex; gap: 6px; padding: 1px 0; }
+.meta-label { flex: 0 0 auto; min-width: 34px; font-weight: 600; color: var(--muted); }
+
+/*
+ * Shared message-content renderer — the reading pane, the case timeline
+ * bubbles, quoted history and signatures all use these three class names.
+ * One set of density rules, so Mail and Cases can never drift apart on line
+ * height or paragraph spacing. Layout chrome (padding, borders) stays
+ * per-surface below; only typography and internal spacing are shared here.
+ */
+.message-body, .message-quoted, .signature-content { line-height: 1.35; overflow-wrap: break-word; }
+.message-body { font-size: 14px; }
+.message-quoted { font-size: 13px; } /* expanded quoted history reads as secondary, not equal to the message */
+
+.message-body p, .message-quoted p, .signature-content p { margin: 0 0 6px; }
+.message-body p:last-child, .message-quoted p:last-child, .signature-content p:last-child { margin-bottom: 0; }
+.message-body div, .message-quoted div, .signature-content div { margin-top: 0; margin-bottom: 0; }
+/* Outlook writes one paragraph per line, with an empty paragraph between real ones: no margins, as in Outlook. */
+.message-body .WordSection1 p, .message-quoted .WordSection1 p, .signature-content .WordSection1 p,
+.message-body p.MsoNormal, .message-quoted p.MsoNormal { margin: 0; }
+/* An empty line (empty paragraph, Gmail's <div><br></div>): a small gap, not a full blank line (lib/sanitize.php). */
+.message-body .ecw-gap, .message-quoted .ecw-gap, .signature-content .ecw-gap { height: 8px; margin: 0 !important; padding: 0; font-size: 0; line-height: 0; overflow: hidden; }
+.message-body ul, .message-body ol,
+.message-quoted ul, .message-quoted ol,
+.signature-content ul, .signature-content ol { margin: 4px 0 6px 20px; padding: 0; }
+.message-body li, .message-quoted li, .signature-content li { margin: 2px 0; }
+.message-body blockquote, .message-quoted blockquote, .signature-content blockquote {
+  margin: 6px 0 6px 12px; padding-left: 12px; border-left: 2px solid var(--border); color: var(--text-2);
+}
+.message-body > :first-child, .message-quoted > :first-child, .signature-content > :first-child { margin-top: 0; }
+.message-body > :last-child, .message-quoted > :last-child, .signature-content > :last-child { margin-bottom: 0; }
+.message-body img, .message-quoted img, .signature-content img { max-width: 100%; height: auto; }
+.message-body table, .message-quoted table, .signature-content table { max-width: 100%; }
+
+/* Reading-pane chrome around the shared surfaces */
+.message-body { padding: 16px; overflow-x: auto; }
+.message-quoted { padding: 0 14px 14px; color: var(--text-2); border-top: 1px dashed var(--border); }
+.signature-content { padding-top: 10px; overflow-x: auto; }
+
+.message-signature { margin: 0 16px 12px; border-top: 1px solid rgb(100 120 140 / 16%); padding-top: 8px; color: var(--text-2); }
+.message-signature summary { cursor: pointer; color: var(--muted); font-size: 12px; width: fit-content; padding: 4px 0; }
+.message-signature summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+@media (max-width: 600px) {
+  .message { margin-right: 12px; }
+  .message.outgoing { margin-left: 16px; }
+  .message-who { flex-wrap: wrap; gap: 3px 8px; }
+}
+.quote-toggle {
+  display: inline-block; margin: 6px 14px 12px; padding: 2px 10px;
+  border: 1px solid var(--border); border-radius: 999px; background: var(--bg-alt); color: var(--text-2);
+}
+.blocked-images {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  margin: 0 14px 10px; padding: 7px 10px; background: #fff7ed;
+  border: 1px solid #fed7aa; border-radius: 6px; font-size: 13px; color: #9a3412;
+}
+.message-actions { padding: 8px 14px 12px; display: flex; gap: 6px; flex-wrap: wrap; }
+.message-actions button { padding: 4px 10px; border: 1px solid var(--border); background: var(--bg); border-radius: 6px; color: var(--text-2); font-size: 13px; }
+.message-attachments { padding: 0 14px 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+.attachment {
+  display: inline-flex; gap: 6px; align-items: center; padding: 5px 10px;
+  border: 1px solid var(--border); border-radius: 6px; font-size: 13px;
+  color: var(--text-2); text-decoration: none; background: var(--bg);
+}
+.attachment .size { font: 500 11px/1 var(--mono); color: var(--muted); }
+
+/* Scroll target for "jump to this message" affordances (details-pane
+   participant clicks here; case.js's reply-ref uses the equivalent .bubble.target
+   in case.css). Briefly outlines the message so the reader can find it. */
+.message.target { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ----------------------------------------------------------- details pane */
+.details-body { padding: 4px 0 16px; }
+.details-section { border-bottom: 1px solid var(--border); }
+.details-section > summary {
+  list-style: none; cursor: pointer; padding: 10px 14px; font-weight: 600; font-size: 13px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.details-section > summary::-webkit-details-marker { display: none; }
+.details-section > summary::after { content: '\25BE'; color: var(--muted); font-size: 11px; }
+.details-section[open] > summary::after { content: '\25B4'; }
+.details-section-body { padding: 0 14px 12px; }
+.details-empty { padding: 0; }
+
+.details-fact-list { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; margin: 0; font-size: 12px; }
+.details-fact-list dt { color: var(--muted); }
+.details-fact-list dd { margin: 0; color: var(--text); overflow-wrap: anywhere; }
+
+.details-participant-list, .details-file-list, .details-link-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.details-participant {
+  width: 100%; text-align: left; padding: 7px 8px; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--bg); display: grid; gap: 2px;
+}
+.details-participant:hover { background: var(--bg-alt); }
+.details-participant-name { font-size: 13px; font-weight: 600; overflow-wrap: anywhere; }
+.details-participant-email { font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
+.details-role-badges { display: flex; gap: 4px; flex-wrap: wrap; }
+.role-badge {
+  font: 500 10px/1.6 var(--mono); padding: 0 5px; border-radius: 4px;
+  background: var(--bg-alt); color: var(--text-2); text-transform: uppercase;
+}
+.role-badge.role-sender { background: var(--accent-soft); color: var(--accent); }
+.details-participant-meta { display: block; }
+
+.details-file {
+  display: flex; gap: 8px; align-items: flex-start; padding: 7px 8px; border: 1px solid var(--border);
+  border-radius: 6px; text-decoration: none; color: var(--text);
+}
+.details-file:hover { background: var(--bg-alt); }
+.details-file-icon { font-size: 16px; line-height: 1.3; }
+.details-file-info { display: grid; gap: 2px; min-width: 0; }
+.details-file-name { font-size: 13px; overflow-wrap: anywhere; }
+.details-file-meta { display: block; }
+
+.details-link { display: block; padding: 5px 8px; border-radius: 6px; font-size: 12px; color: var(--accent); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.details-link:hover { background: var(--accent-soft); }
+
+/* ---------------------------------------------------------------- overlays */
+.overlay {
+  position: fixed; inset: 0; background: rgba(15,23,42,.35);
+  display: flex; align-items: center; justify-content: center; z-index: 50; padding: 20px;
+}
+.overlay[hidden] { display: none; }
+.composer, .dialog {
+  background: var(--bg); border-radius: 12px; box-shadow: 0 12px 40px rgba(0,0,0,.2);
+  width: min(760px, 100%); max-height: 90vh; display: flex; flex-direction: column;
+}
+.dialog { padding: 18px; gap: 12px; }
+.dialog.wide { width: min(860px, 100%); }
+.dialog h2 { margin: 0; font-size: 16px; }
+.dialog footer, .composer-footer { display: flex; justify-content: flex-end; gap: 8px; }
+.dialog input[type="search"], .dialog input[type="text"] {
+  width: 100%; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; font: inherit;
+}
+.dialog button { padding: 7px 12px; border: 1px solid var(--border); background: var(--bg); border-radius: 6px; }
+.dialog .danger { background: var(--danger); border-color: var(--danger); color: #fff; font-weight: 600; }
+
+.composer-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 600;
+}
+.composer-header button { border: 0; background: transparent; font-size: 20px; line-height: 1; color: var(--text-2); }
+.composer-fields { padding: 8px 16px; display: grid; gap: 6px; }
+.field { display: grid; grid-template-columns: 64px 1fr; align-items: center; gap: 8px; }
+.field span { font-size: 12px; color: var(--muted); }
+.field input { padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; font: inherit; }
+/* To / Cc / Bcc as chips (recipient-chips.js): drag one to another field, × removes it, double-click edits it. */
+.rcpt-box { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; min-height: 36px; padding: 3px 6px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); cursor: text; box-sizing: border-box; min-width: 0; }
+.rcpt-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.field .rcpt-box input.rcpt-input { flex: 1 1 120px; min-width: 120px; padding: 3px 2px; border: 0; border-radius: 0; background: transparent; box-shadow: none; outline: none; }
+.rcpt-chip { display: inline-flex; align-items: center; gap: 2px; max-width: 100%; padding: 1px 2px 1px 9px; border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border)); border-radius: 999px; background: color-mix(in srgb, var(--accent) 9%, var(--bg)); color: var(--text); font-size: 13px; line-height: 22px; cursor: grab; user-select: none; }
+.rcpt-chip:hover { border-color: var(--accent); }
+.rcpt-chip.dragging { opacity: .45; cursor: grabbing; }
+.rcpt-chip.invalid { border-color: #e5a3a3; background: color-mix(in srgb, #c92a2a 8%, var(--bg)); color: #b42318; }
+.rcpt-chip-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rcpt-chip .rcpt-chip-x { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; min-height: 0; margin: 0; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--muted); font-size: 14px; line-height: 1; cursor: pointer; box-shadow: none; }
+.rcpt-chip .rcpt-chip-x:hover { background: var(--bg-alt); color: var(--text); }
+/* While a chip is dragged: every field shows where it can go, the one under the pointer stands out. */
+body.rcpt-dragging .rcpt-box { border-style: dashed; border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); }
+.rcpt-box.drop-here { border-style: solid !important; border-color: var(--accent) !important; background: var(--accent-soft); }
+/* Cc/Bcc stay collapsed behind a toggle so a plain reply doesn't carry two
+   empty rows of vertical space it never needed. */
+.field-row { display: flex; align-items: center; gap: 8px; }
+.field-row .field { flex: 1 1 auto; }
+.cc-bcc-toggle {
+  flex: 0 0 auto; border: 0; background: transparent; color: var(--accent);
+  font-size: 12px; padding: 4px 2px;
+}
+#ccBccFields { display: grid; gap: 6px; }
+#ccBccFields[hidden] { display: none; }
+#editor, #sigEditor { min-height: 220px; max-height: 42vh; overflow-y: auto; margin: 6px 16px; }
+#sigEditor { min-height: 140px; margin: 6px 0; }
+.ql-toolbar.ql-snow, .ql-container.ql-snow { border-color: var(--border); }
+.composer-attachments { padding: 2px 16px 6px; display: flex; gap: 6px; flex-wrap: wrap; flex-shrink: 0; }
+.composer-attachments:empty { display: none; }
+/* The file name in a composer chip opens it (a link styled as text, not as a second chip). */
+.composer-attachments a.att-open { all: unset; cursor: pointer; color: inherit; }
+.composer-attachments a.att-open:hover, .composer-attachments a.att-open:focus-visible { color: var(--accent); text-decoration: underline; }
+/* A file on its way up: a bar fills under its name (app.js uploadingChip). */
+.composer-attachments .attachment.is-uploading { position: relative; overflow: hidden; color: var(--text-2); }
+.composer-attachments .att-progress { position: absolute; left: 0; bottom: 0; height: 3px; width: 0; background: var(--accent); transition: width .2s ease; }
+.composer-footer { padding: 12px 16px; border-top: 1px solid var(--border); justify-content: space-between; }
+.composer-left, .composer-right { display: flex; gap: 8px; align-items: center; }
+.composer-left { min-width: 0; flex-wrap: wrap; }
+.file-button i, .compose-signature-select i { color: var(--muted); }
+.composer-footer button { padding: 7px 14px; border: 1px solid var(--border); background: var(--bg); border-radius: 6px; }
+.file-button { padding: 7px 12px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; color: var(--text-2); }
+.sig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.sig-grid label { display: grid; gap: 4px; font-size: 12px; color: var(--muted); }
+.sig-grid input { padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; font: inherit; }
+.case-results { list-style: none; margin: 0; padding: 0; max-height: 240px; overflow-y: auto; }
+.case-results li button {
+  width: 100%; text-align: left; padding: 8px 10px; border: 0;
+  border-bottom: 1px solid var(--border); background: transparent;
+}
+.case-results li button:hover { background: var(--bg-alt); }
+/* New case: its name on its own line, then group, template and the button. */
+.case-new { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.case-new-line { display: flex; gap: 8px; align-items: center; flex: 1 1 100%; min-width: 0; }
+.case-new #newCaseName { flex: 1 1 auto; min-width: 0; }
+.case-new select { flex: 1 1 160px; min-width: 0; }
+.case-new #createCaseBtn { flex: 0 0 auto; margin-left: auto; }
+.confirm-line { padding: 4px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.confirm-line .role { display: inline-block; width: 40px; color: var(--muted); font-size: 12px; }
+
+.muted { color: var(--muted); font-size: 12px; }
+.toast {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: #0d0d0d; color: #fff; padding: 9px 16px; border-radius: 999px;
+  font-size: 13px; z-index: 100; display: flex; align-items: center; gap: 12px;
+}
+.toast[hidden] { display: none; }
+.toast.error { background: var(--danger, #c62828); color: #fff; }
+.toast.ok { background: #1e7e34; color: #fff; }
+.toast-action {
+  border: 0; background: transparent; color: #fff; font-weight: 600;
+  text-decoration: none; cursor: pointer; padding: 0; font-size: 13px;
+}
+
+/* ----------------------------------------------------- case settings menu */
+.case-actions-col { text-align: right; width: 1%; white-space: nowrap; }
+.case-settings-menu summary { font-weight: 700; line-height: 1; }
+.case-name-edit {
+  width: 100%; padding: 4px 6px; border: 1px solid var(--accent); border-radius: 6px; font: inherit;
+}
+
+/* Narrow screens collapse the sidebar first (folders/cases become a toggled
+   drawer over the two remaining panes); only once list+reading themselves no
+   longer fit side by side do they switch to a single pane. */
+.nav-toggle { display: none; }
+.nav-backdrop { position: fixed; inset: 0; background: rgba(15,23,42,.25); z-index: 39; }
+.nav-backdrop[hidden] { display: none; }
+
+/* 981px and up: four columns sized by the pane resizer (paneResizer.js keeps
+   the CSS variables fitted to the window). 980px and below: Folders and
+   Details become drawers that slide over the page, opened from the ☰ button
+   and the Details button; the list keeps a fixed column. */
+.details-toggle, .details-close { display: none !important; }
+@media (max-width: 980px) {
+  .nav-toggle { display: inline-flex; }
+  .panes { grid-template-columns: minmax(260px, 340px) minmax(0, 1fr); }
+  .pane.nav, .pane.details { display: none; }
+  .pane-resize-handle, .pane-expand-tab, .pane-collapse-btn { display: none !important; }
+  body.nav-open .pane.nav {
+    display: block; position: fixed; top: 0; left: 0; bottom: 0; width: 280px; max-width: 86vw;
+    z-index: 40; box-shadow: 2px 0 16px rgba(0,0,0,.18); padding-top: 14px;
+  }
+  .details-toggle { display: inline-flex !important; align-items: center; gap: 5px; }
+  body.details-open .pane.details:not([hidden]) {
+    display: block; position: fixed; top: 0; right: 0; bottom: 0; width: 360px; max-width: 92vw;
+    z-index: 40; background: var(--bg); box-shadow: -2px 0 16px rgba(0,0,0,.18);
+  }
+  body.details-open .details-toggle { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+  .pane.details .pane-toolbar { justify-content: flex-end; }
+  .details-close {
+    display: inline-flex !important; align-items: center; justify-content: center; width: 32px; height: 32px;
+    border: 0; border-radius: 8px; background: transparent; color: var(--text-2); font-size: 16px; cursor: pointer;
+  }
+  .details-close:hover { background: var(--bg-alt); }
+}
+@media (max-width: 860px) {
+  .panes { grid-template-columns: 1fr; }
+  .pane.list { display: none; }
+  body.show-list .pane.list, body:not(.reading-open) .pane.list { display: block; }
+  body.reading-open .pane.reading { display: block; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+/* The "new mail" affordance, shown instead of rewriting a list someone is
+   scrolled into. */
+.new-mail-pill {
+  position: sticky; top: 8px; z-index: 5; display: block; margin: 8px auto;
+  padding: 5px 14px; border: 1px solid var(--accent); border-radius: 999px;
+  background: var(--accent); color: #fff; font-size: 12px; font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
+}
+/* Non-modal, resizable mail composer. */
+.composer-window { position:fixed; right:24px; bottom:20px; width:min(1000px,95vw); height:min(650px,88vh); min-width:340px; min-height:360px; max-width:100vw; max-height:95vh; resize:both; overflow:hidden; z-index:45; box-shadow:0 12px 48px #172b4d35; border:1px solid var(--border); border-radius:12px; background:var(--bg); }
+.composer-window[hidden] { display:none; }
+/* Settings → Appearance → replies open "In the email" (app.js placeComposer). */
+.composer-window.inline { position:relative; inset:auto; width:auto; min-width:0; max-width:none; max-height:none; z-index:auto; box-shadow:0 2px 10px #172b4d14; }
+.composer-window.inline-reply { height:max(440px, 64vh); margin:10px 0; resize:vertical; scroll-margin-top:10px; }
+.composer-window.inline-new { height:100% !important; border:0; border-radius:0; box-shadow:none; resize:none; }
+.composer-window.inline .composer-header { cursor:default; }
+.composer-window.inline-reply :is(.composer-history, .composer-divider) { display:none !important; }   /* the conversation is right above */
+body.inline-compose-new #readingPane > :not(#composerOverlay) { display:none !important; }
+body.inline-compose-new #readingPane { overflow:hidden; }
+.composer-window.inline-new .composer-footer { padding-right:84px; }   /* clear of the Teams button in the corner */
+.composer-window .composer { width:100%; height:100%; max-height:none; border-radius:0; box-shadow:none; }
+.composer-header { cursor:move; touch-action:none; flex-shrink:0; }
+.composer-workspace { display:flex; flex:1; min-height:0; overflow:hidden; }
+.composer-edit { display:flex; flex-direction:column; flex:1; min-width:0; overflow:auto; }
+.composer-edit #editor { flex:1; min-height:180px; max-height:none; }
+.composer-history { width:42%; min-width:220px; padding:10px; overflow:auto; border-left:1px solid var(--border); background:#f6f8fb; }
+.composer-history[hidden] { display:none; }
+.composer-history .message { margin:8px 0; }
+.composer-history .message-actions { display:none; }
+.composer-history .message-body { max-height:240px; overflow:auto; }
+.composer-history .message-who { flex-wrap:wrap; }
+.composer-footer { flex-shrink:0; }
+#sendProgress { width:100%; height:4px; flex-shrink:0; accent-color:var(--accent); }
+#sendProgress[hidden] { display:none; }
+.composer-window[aria-busy="true"] .composer-workspace { pointer-events:none; opacity:.75; }
+.sender-avatar { display:inline-flex; flex:0 0 30px; width:30px; height:30px; align-items:center; justify-content:center; border-radius:50%; color:#40556b; background:#e7edf4; font:600 11px/1 system-ui; }
+.message-from { flex:1; }
+.search { position:relative; }
+.search-filters summary { list-style:none; cursor:pointer; padding:7px 10px; color:var(--text-2); }
+.search-filter-panel { position:absolute; top:100%; left:0; width:min(560px,92vw); max-height:calc(100vh - 140px); overflow:auto; display:grid; grid-template-columns:1fr 1fr; gap:10px 12px; padding:16px; background:var(--bg); border:1px solid var(--border); border-radius:10px; box-shadow:0 8px 24px #172b4d22; z-index:60; }
+.search-filter-panel select { padding:6px 8px; border:1px solid var(--border); border-radius:6px; background:var(--bg); color:var(--text); font:inherit; }
+.search-filter-panel .search-filter-check { display:flex !important; align-items:center; gap:6px; font-size:13px; }
+.search-filter-panel > button, .search-filter-panel > .help-link { align-self:center; }
+@media (max-width:560px) { .search-filter-panel { grid-template-columns:1fr; } }
+.search-filter-panel label { display:grid; gap:4px; font-size:12px; }
+.search-filter-panel input[type="checkbox"] { width:auto; }
+@media(max-width:650px) { .composer-window { right:2vw; width:96vw; min-width:280px; } .composer-workspace { flex-direction:column; } .composer-history { width:auto; min-height:120px; max-height:35%; border-left:0; border-top:1px solid var(--border); } }
+.composer-divider { flex:0 0 8px; cursor:col-resize; touch-action:none; background:var(--bg-alt); border-left:1px solid var(--border); border-right:1px solid var(--border); }
+.composer-divider:hover, .composer-divider:focus-visible { background:var(--accent-soft); }
+.composer-divider[hidden] { display:none; }
+
+/* ---------------------------------------------------- file preview (task 04) */
+/* Above every other overlay in this folder (.overlay 50, .composer-window/
+   .search-filter-panel 60, .toast 100) — a preview opened from inside the
+   composer or a case column must still land on top. */
+.file-preview-overlay {
+  position: fixed; inset: 0; z-index: 200; padding: 20px;
+  background: rgba(13,13,13,.82); display: flex; align-items: center; justify-content: center;
+}
+.file-preview-overlay[hidden] { display: none; }
+.file-preview {
+  width: min(1100px, 100%); height: min(88vh, 100%); background: var(--bg);
+  border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,.45);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.file-preview-header {
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+  padding: 10px 14px; border-bottom: 1px solid var(--border);
+}
+.file-preview-name { flex: 1; min-width: 0; font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-preview-size { flex-shrink: 0; color: var(--muted); font-size: 12px; }
+.file-preview-header button {
+  flex-shrink: 0; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--bg); color: var(--text-2); font-size: 13px; cursor: pointer;
+}
+.file-preview-header button:hover { background: var(--bg-alt); }
+.file-preview-close { border: 0; background: transparent; font-size: 20px; line-height: 1; padding: 4px 8px; }
+.file-preview-body {
+  position: relative; flex: 1; min-height: 0; background: #0d0d0d;
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.file-preview-body img { max-width: 100%; max-height: 100%; object-fit: contain; cursor: zoom-in; user-select: none; }
+.file-preview-body img.zoomed { cursor: grab; }
+.file-preview-body img.zoomed:active { cursor: grabbing; }
+.file-preview-body iframe { width: 100%; height: 100%; border: 0; background: #fff; }
+.file-preview-body .file-preview-cad { width: 100%; height: 100%; }
+.file-preview-body img[hidden], .file-preview-body iframe[hidden], .file-preview-body .file-preview-cad[hidden] { display: none; }
+.file-preview-spinner {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 3px solid rgba(255,255,255,.25); border-top-color: #fff;
+  animation: file-preview-spin .8s linear infinite;
+}
+.file-preview-spinner[hidden] { display: none; }
+@keyframes file-preview-spin { to { transform: rotate(360deg); } }
+.file-preview-error {
+  display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 20px; text-align: center; color: #fff;
+}
+.file-preview-error[hidden] { display: none; }
+.file-preview-error button {
+  padding: 7px 14px; border: 1px solid rgba(255,255,255,.4); border-radius: 6px;
+  background: transparent; color: #fff; cursor: pointer;
+}
+.file-preview-error button:hover { background: rgba(255,255,255,.12); }
+.file-preview-nav {
+  position: absolute; top: 50%; transform: translateY(-50%); z-index: 1;
+  width: 40px; height: 40px; border-radius: 50%; border: 0;
+  background: rgba(255,255,255,.15); color: #fff; font-size: 22px; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.file-preview-nav:hover { background: rgba(255,255,255,.3); }
+.file-preview-nav[hidden] { display: none; }
+.file-preview-nav.prev { left: 12px; }
+.file-preview-nav.next { right: 12px; }
+@media (max-width: 650px) {
+  .file-preview-overlay { padding: 0; }
+  .file-preview { width: 100%; height: 100%; border-radius: 0; }
+  .file-preview-name { font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .file-preview-spinner { animation-duration: 1.6s; }
+}
+@media(max-width:650px) { .composer-divider { display:none; } .composer-history { width:auto !important; } }
+/* Separate file windows keep other files and the mailbox accessible. */
+.file-preview-overlay { inset:auto; width:min(760px,85vw); height:72vh; min-width:340px; min-height:260px; max-width:98vw; max-height:94vh; padding:0; display:block; resize:both; overflow:hidden; background:var(--bg); border:1px solid var(--border); border-radius:10px; box-shadow:0 12px 40px #0004; }
+.file-preview { width:100%; height:100%; border-radius:0; box-shadow:none; }
+.file-preview-header { cursor:move; touch-action:none; flex-wrap:wrap; }
+.compose-quote { margin:8px 16px; border:1px solid var(--border); border-radius:8px; padding:10px; }
+.compose-quote summary { cursor:pointer; color:var(--accent); font-weight:600; }
+.compose-quote p { font-size:12px; }
+#quoteEditor { min-height:140px; }
+/* The signature picker sits small in the footer, next to Attach. */
+.compose-signature-select { display:flex; gap:6px; align-items:center; min-width:0; color:var(--muted); font-size:13px; }
+.compose-signature-select select {
+  min-width:0; width:auto; max-width:190px; padding:6px 28px 6px 9px; border:1px solid var(--border); border-radius:6px; text-overflow:ellipsis;
+  background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23778' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 11px center;
+  color:var(--text); font:inherit; font-size:13px; font-weight:500; text-transform:none; letter-spacing:0;
+  -webkit-appearance:none; appearance:none; cursor:pointer; transition:border-color .12s, box-shadow .12s;
+}
+.compose-signature-select select:hover { border-color:color-mix(in srgb, var(--accent) 40%, var(--border)); }
+.compose-signature-select select:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+/* The signature under the text: a faded strip of its first lines; a click shows it all. */
+.compose-signature-preview { position:relative; flex-shrink:0; margin:6px 16px 10px; padding:4px 10px; max-height:52px; overflow:hidden; font-size:12px; opacity:.55; cursor:pointer; border-left:2px solid var(--border);
+  -webkit-mask-image:linear-gradient(#000 45%, transparent); mask-image:linear-gradient(#000 45%, transparent); transition:opacity .15s; }
+.compose-signature-preview:hover, .compose-signature-preview:focus-visible { opacity:.8; outline:none; }
+.compose-signature-preview[aria-expanded="true"] { max-height:none; opacity:1; -webkit-mask-image:none; mask-image:none; font-size:13px; }
+.compose-signature-preview:empty { display:none; }
+.checkbox-label, .search-filter-panel label:has(input[type="checkbox"]), .column-toggle { display:flex !important; flex-direction:row; align-items:center; gap:8px; }
+label input[type="checkbox"] { flex:0 0 auto; width:16px !important; height:16px; margin:0; }
+.pane-resize-handle { width:10px; background:color-mix(in srgb,var(--border) 55%,transparent); }
+.pane-resize-handle.side-right { right:0; }
+.pane-resize-handle.side-left { left:0; }
+.pane-expand-tab { width:auto; min-width:32px; height:auto; min-height:44px; padding:10px 8px; font-size:12px; font-weight:600; color:var(--text); background:var(--accent-soft); box-shadow:0 2px 7px #0002; z-index:15; }
+.bubble-expand, .quote-toggle, .message-quote-toggle, .bubble-quote-toggle, .message-signature summary { min-height:30px; padding:5px 10px; border:1px solid var(--border); border-radius:6px; background:var(--bg-alt); color:var(--text-2); font-weight:600; }
+@media(max-width:980px) { .pane-resize-handle { display:none; } }
+/* Signature tables are layouts, not spreadsheets. Keep their original borders. */
+.compose-signature-preview, .signature-content { line-height:1.25; }
+:is(.compose-signature-preview,.signature-content) :is(p,div) { margin-top:0 !important; margin-bottom:0 !important; line-height:1.25 !important; }
+:is(.compose-signature-preview,.signature-content) table { border-spacing:0; }
+.quote-editable { padding:12px; min-height:140px; line-height:1.4; overflow-wrap:anywhere; outline:none; }
+.quote-editable:focus { box-shadow:inset 0 0 0 2px var(--accent-soft); }
+.quote-editable img { max-width:100%; height:auto; }
+.quote-editable table { max-width:100%; border-spacing:0; }
+.quote-editable p { margin:0 0 6px; }
+.quote-editable td p, .quote-editable td div { margin:0 !important; line-height:1.25 !important; }
+.quote-edit-toolbar { display:flex; gap:6px; flex-wrap:wrap; padding:6px; border-bottom:1px solid var(--border); }
+.quote-edit-toolbar button { background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:5px; padding:4px 8px; }
+.file-preview-cad, .ot-cad-container { min-width:0; min-height:0; }
+.file-preview-cad canvas { opacity:1; }
+.file-preview-overlay[data-expanded="true"] { resize:none; max-height:calc(100vh - 24px); max-width:calc(100vw - 24px); }
+
+/* Mobile mail opens one conversation at a time. */
+.mobile-mail-back { display:none; }
+.is-loading::before { content:""; display:inline-block; width:16px; height:16px; margin-right:8px; vertical-align:middle; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:file-preview-spin .8s linear infinite; }
+.case-status-filters { display:flex; flex-wrap:wrap; gap:6px; margin:12px 0; }
+.case-status-filters button { border:1px solid var(--border); border-radius:6px; padding:6px 12px; background:var(--bg); color:var(--text); }
+.case-status-filters [aria-pressed="true"] { background:var(--accent-soft); color:var(--accent); border-color:var(--accent); }
+.file-preview-header { flex-wrap:nowrap; flex-shrink:0; overflow:visible; position:relative; z-index:10; }
+.file-preview-more { position:relative; flex-shrink:0; }
+.file-preview-more summary { cursor:pointer; border:1px solid var(--border); border-radius:6px; padding:5px 10px; list-style:none; }
+.file-preview-actions { position:absolute; right:0; top:calc(100% + 6px); width:190px; max-height:60dvh; overflow:auto; display:grid; gap:6px; padding:8px; background:var(--bg); border:1px solid var(--border); border-radius:8px; box-shadow:0 4px 16px #0003; }
+.file-preview-actions button { text-align:left; }
+@media(max-width:860px) {
+  body:not(.page-body):not(.case-body) { height:100dvh; }
+  .panes { grid-template-columns:minmax(0,1fr) !important; grid-template-rows:minmax(0,1fr); }
+  .panes > .pane.list, .panes > .pane.reading { grid-column:1; grid-row:1; }
+  .panes > .pane.reading, body.show-list.reading-open .panes > .pane.list { display:none; }
+  body:not(.reading-open) .panes > .pane.list { display:block; }
+  body.reading-open .panes > .pane.list { display:none; }
+  body.reading-open .panes > .pane.reading { display:block; }
+  .mobile-mail-back { display:block; position:sticky; top:0; z-index:6; padding:10px 14px; border:0; border-bottom:1px solid var(--border); width:100%; text-align:left; background:var(--bg); color:var(--accent); }
+  .pane-collapse-btn, .pane-expand-tab { display:none; }
+  .topbar { flex-wrap:wrap; gap:6px; padding:8px; flex-shrink:0; }
+  .search { min-width:0; flex:1 1 180px; }
+  .topbar-right { flex-wrap:wrap; }
+  .thread-actions { flex-wrap:wrap; }
+  .dialog { max-width:calc(100vw - 20px); max-height:90dvh; overflow:auto; }
+  .file-preview-overlay, .file-preview-overlay[data-expanded="true"] { left:0 !important; top:0 !important; right:auto !important; bottom:auto !important; width:100vw !important; height:100dvh !important; min-width:0; min-height:0; max-width:100vw; max-height:100dvh; border-radius:0; resize:none; }
+  .file-preview-header { cursor:default; touch-action:auto; padding-top:max(10px,env(safe-area-inset-top)); }
+  .file-preview-size { display:none; }
+  .file-preview-body { min-height:0; padding-bottom:env(safe-area-inset-bottom); }
+}
+
+@media(max-width:860px) {
+  .search input { min-width:0; width:100%; }
+  .topbar .brand { display:none; }
+}
+
+.attachment-marker { font-size:18px; color:var(--accent); margin-left:5px; vertical-align:middle; }
+.ai-assistant { position:fixed; right:16px; top:70px; bottom:16px; width:min(460px,calc(100vw - 24px)); padding:16px; z-index:280; overflow:auto; background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:12px; box-shadow:0 12px 40px #0004; }
+.ai-assistant[hidden],.ai-assistant [hidden],.reply-assistant-btn[hidden] { display:none; }
+.ai-assistant header { display:flex; align-items:center; justify-content:space-between; }
+.ai-assistant label { display:grid; gap:5px; margin:12px 0; }
+.ai-assistant input,.ai-assistant textarea { width:100%; padding:8px; border:1px solid var(--border); border-radius:6px; font:inherit; }
+.ai-assistant button,.reply-assistant-btn { padding:7px 12px; border:1px solid var(--border); background:var(--bg); color:var(--text); border-radius:6px; }
+.ai-assistant button.primary { background:var(--accent); color:white; }
+.ai-answer { white-space:pre-wrap; overflow-wrap:anywhere; }
+.ai-sources { padding-left:20px; font-size:12px; }
+.ai-sources a { color:var(--accent); }
+.reply-assistant-btn { margin:8px 16px; align-self:flex-start; }
+/* The composer's one tool row: formatting on the left, Templates · Meeting · AI at its right end
+   (app.js moves .composer-tools into the editor's toolbar). */
+#composerOverlay .ql-toolbar.ql-snow { display:flex; flex-wrap:wrap; align-items:center; row-gap:4px; margin:6px 16px 0; padding:5px 8px; border-radius:8px 8px 0 0; background:var(--bg-alt); }
+#composerOverlay .ql-toolbar.ql-snow .ql-formats { margin-right:10px; }
+.composer-tools { display:flex; gap:2px; align-items:center; }
+#composerOverlay .ql-toolbar.ql-snow .composer-tools { display:flex; align-items:center; margin:0 0 0 auto; padding-left:8px; border-left:1px solid var(--border); }
+.ql-snow.ql-toolbar .composer-tools button.reply-assistant-btn { float:none; display:inline-flex; align-items:center; gap:5px; width:auto; height:28px; margin:0; padding:0 8px; border:1px solid transparent; border-radius:6px; background:transparent; color:var(--text-2); font-size:12.5px; font-weight:500; white-space:nowrap; }
+.ql-snow.ql-toolbar .composer-tools button.reply-assistant-btn:hover, .ql-snow.ql-toolbar .composer-tools button.reply-assistant-btn:focus-visible { background:var(--bg); border-color:var(--border); color:var(--text); }
+.composer-tools button[hidden] { display:none !important; }
+.composer-tools button i { flex-shrink:0; vertical-align:0; }
+.composer-tools .tool-label { line-height:1; }
+/* A narrow writing area: icons only (the name shows on hover), tighter groups. */
+.composer-edit { container-type:inline-size; }
+@container (max-width:800px) {
+  .composer-tools .tool-label { display:none; }
+  #composerOverlay .ql-toolbar.ql-snow .ql-formats { margin-right:4px; }
+  .ql-snow.ql-toolbar .composer-tools button.reply-assistant-btn { padding:0 6px; }
+}
+/* The writing area: as big as the window allows; a click anywhere in it puts the cursor there. */
+#composerOverlay #editor { margin-top:0; border-radius:0 0 8px 8px; min-height:240px; }
+#composerOverlay #editor .ql-editor { min-height:100%; cursor:text; padding:14px 16px; }
+#composerOverlay #editor .ql-editor.ql-blank::before { left:16px; color:var(--muted); font-style:normal; }
+#composerOverlay #editor:focus-within { border-color:color-mix(in srgb, var(--accent) 45%, var(--border)); }
+/* A table in the text (pasted from a signature or a page): as wide as its content and without the
+   editor's black grid, which the email never had; a faint outline shows its cells while editing. */
+#editor .ql-editor table { width:auto; max-width:100%; table-layout:auto; }
+#editor .ql-editor td { border:1px dashed transparent; padding:2px 4px; vertical-align:top; }
+#editor .ql-editor table:hover td { border-color:color-mix(in srgb, var(--border) 70%, transparent); }
+@media(max-width:860px) { .ai-assistant { inset:0; width:100%; height:100dvh; border-radius:0; } }
+
+/* ------------------------------------------------- collapsed icon rails
+   Folders and Messages collapse to a thin column of icons (width set by
+   RAIL_W in paneResizerInit.js). Wide screens only: at 980px and below the
+   folders are a drawer (always with their names) and never collapse. */
+.list-rail { display:none; }
+@media (min-width:981px) {
+  .rail-btn { display:flex; align-items:center; justify-content:center; width:36px; height:36px; padding:0; border:0; border-radius:8px; background:transparent; color:var(--text-2); font-size:15px; }
+  .rail-btn:hover { background:var(--bg-alt); }
+  .rail-btn.active { background:var(--accent-soft); color:var(--accent); }
+
+  /* Folders */
+  .pane.nav.is-collapsed { padding:8px 0; }
+  .pane.nav.is-collapsed .pane-toolbar { justify-content:center; padding:0 0 6px; }
+  .pane.nav.is-collapsed .nav-title,
+  .pane.nav.is-collapsed .nav-status { display:none; }
+  .pane.nav.is-collapsed .nav-section { margin:0; padding:6px 7px; border-top:1px solid var(--border); }
+  .pane.nav.is-collapsed .nav-item { position:relative; justify-content:center; width:36px; height:36px; padding:0; font-size:0; }
+  .pane.nav.is-collapsed .nav-item .ui-icon { width:auto; margin:0; font-size:15px; }
+  .pane.nav.is-collapsed .nav-item .count { position:absolute; top:1px; right:-2px; padding:1px 4px; border-radius:8px; background:var(--accent); color:#fff; font-size:9px; }
+  .pane.nav.is-collapsed .nav-list > li + li { margin-top:2px; }
+
+  /* Messages */
+  .pane.list.is-collapsed > :not(.list-rail) { display:none !important; }
+  .pane.list.is-collapsed .list-rail { display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 0; }
+  .pane.list.is-collapsed .list-rail #listExpandBtn { margin-bottom:6px; }
+  .list-rail-title { margin-top:12px; max-height:50vh; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; writing-mode:vertical-rl; font-size:12px; font-weight:600; letter-spacing:.04em; color:var(--muted); }
+}
+
+/* "Search in" folder button inside the search box, on the left (app.js openSearchScopeMenu). */
+.search .search-field .search-scope-btn { position:absolute; top:50%; left:4px; transform:translateY(-50%); z-index:1; display:inline-flex; align-items:center; gap:3px; height:30px; padding:0 6px !important; border:0 !important; border-radius:7px; background:transparent !important; color:var(--muted); box-shadow:none !important; cursor:pointer; font-size:14px; }
+.search .search-field .search-scope-btn:hover, .search .search-field .search-scope-btn:focus-visible, .search .search-field .search-scope-btn[aria-expanded="true"] { background:var(--bg-alt) !important; color:var(--accent); outline:none; }
+.search .search-field .search-scope-btn.narrowed { color:var(--accent); }
+.search-scope-caret { font-size:10px; opacity:.7; }
+.search .search-field input#searchInput { padding-left:46px; }
+.search-scope-menu { position:absolute; top:calc(100% + 6px); left:0; z-index:400; min-width:220px; max-height:min(420px, 70vh); overflow-y:auto; padding:6px; border:1px solid var(--border); border-radius:12px; background:var(--bg); box-shadow:0 12px 32px #0003; display:flex; flex-direction:column; gap:1px; }
+.search-scope-menu[hidden] { display:none; }
+.search-scope-head { padding:4px 10px 6px; font-size:11.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+.search-scope-item { display:flex; align-items:center; gap:8px; width:100%; padding:7px 10px !important; min-height:0 !important; border:0 !important; border-radius:8px; background:transparent !important; color:var(--text) !important; font:inherit; font-size:13.5px !important; text-align:left; cursor:pointer; box-shadow:none !important; }
+.search-scope-item .fa { width:16px; text-align:center; color:var(--muted); }
+.search-scope-item:hover, .search-scope-item:focus-visible { background:var(--bg-alt) !important; outline:none; }
+.search-scope-item.on { background:color-mix(in srgb, var(--accent) 10%, var(--bg)) !important; color:var(--accent) !important; font-weight:600; }
+.search-scope-item.on .fa { color:var(--accent); }
+.folder-badge { display:inline-flex; align-items:center; gap:4px; padding:1px 7px; border-radius:6px; background:var(--bg-alt); border:1px solid var(--border); color:var(--text-2); font-size:11.5px; }
+
+/* A scheduled email reopened in the composer (app.js paintDraftSchedule). */
+.draft-unschedule { margin-left:4px; padding:0 !important; min-height:0 !important; border:0 !important; background:none !important; color:var(--accent) !important; font:inherit; font-size:inherit; text-decoration:underline; cursor:pointer; box-shadow:none !important; }
+
+/* Search: the words typed, lit in the list and the conversation's name (app.js markInto). */
+mark.search-mark { background:#fde68a; color:inherit; border-radius:3px; padding:0 1px; box-shadow:0 0 0 1px #f5c84b inset; }
+:root:is([data-theme="dark"],[data-theme="graphite"]) mark.search-mark { background:#6b5310; color:#fff6d6; box-shadow:none; }
+/* Top results (lib/mail.php): conversations named with every word, above the dates. */
+.list-group-top .list-group-toggle { cursor:default; }
+.list-group-top .fa-star { color:#f59e0b; }
+
+/* Sync button: a folder not checked for 5 minutes (app.js renderSyncActivity, lib/sync/activity.php). */
+#syncNowBtn { position:relative; }
+#syncNowBtn.is-behind::after { content:''; position:absolute; top:3px; right:3px; width:7px; height:7px; border-radius:50%; background:#f59e0b; box-shadow:0 0 0 2px var(--bg); }
+
+/* Account picker: the accounts of each workspace (company) under its name. */
+.acct-menu-ws { display:flex; align-items:center; gap:6px; padding:8px 12px 4px; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--muted); }
+
+/* ------------------------------------------------ the email list in columns
+   Dragged wide (or a wide screen with the reading pane narrow): one line per email,
+   From | Subject | (count, files, case) | Received, under column titles, like Outlook. */
+.pane.list { container: maillist / inline-size; }
+.list-columns { display:none; }
+@container maillist (min-width: 760px) {
+  .list-columns, .thread-row { display:grid !important; grid-template-columns:minmax(140px, 22%) minmax(0, 1fr) clamp(150px, 26%, 330px) 110px; column-gap:14px; align-items:center; }
+  .list-columns { padding:6px 14px 6px 17px; border-bottom:1px solid var(--border); background:var(--bg); color:var(--muted); font-size:12px; font-weight:600; }
+  .list-columns span:last-child { text-align:right; }
+  .thread-row { padding-top:6px !important; padding-bottom:6px !important; }
+  .thread-row .row-top { display:contents; }
+  .thread-row .row-from { grid-column:1; grid-row:1; }
+  .thread-row .row-subject { grid-column:2; grid-row:1; }
+  .thread-row .row-preview { display:none; }
+  .thread-row .row-markers { grid-column:3; grid-row:1; margin:0; flex-wrap:nowrap; justify-content:flex-end; min-width:0; overflow:hidden; }
+  .thread-row .row-markers .case-badge { overflow:hidden; text-overflow:ellipsis; min-width:0; }
+  .thread-row .row-markers > :not(.case-badge) { flex-shrink:0; white-space:nowrap; }
+  .thread-row .row-flag { grid-column:4; grid-row:1; justify-self:start; margin:0; }
+  .thread-row .row-time { grid-column:4; grid-row:1; justify-self:end; }
+}
+.thread-draft-files { margin: 0 0 8px; }

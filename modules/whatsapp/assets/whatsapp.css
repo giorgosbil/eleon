@@ -1,0 +1,39 @@
+/* WhatsApp module: the WhatsApp tab and Settings → WhatsApp. Uses the chat layout of teams.css. */
+.wa-green, .fa-whatsapp { color:#25d366; }
+.wa-new-btn { white-space:nowrap; }
+.wa-number { margin:0; padding:8px 12px; border-top:1px solid var(--border); font-size:12px; }
+.wa-head-text { flex:1; min-width:0; display:flex; flex-direction:column; }
+.wa-head-text h2 { margin:0; font-size:16px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.wa-head-text .muted { font-size:12px; }
+.wa-case-chip { max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding:4px 10px; border-radius:999px; background:var(--accent-soft); color:var(--text); font-size:13px; text-decoration:none; }
+.wa-list { background:color-mix(in srgb, #25d366 5%, var(--bg-alt)); }
+.wa-day { margin:12px auto 6px; width:max-content; padding:2px 10px; border-radius:6px; background:var(--bg); border:1px solid var(--border); font-size:11px; color:var(--muted); }
+.wa-msg.mine .teams-msg-bubble { background:color-mix(in srgb, #25d366 22%, var(--bg)); border-color:color-mix(in srgb, #25d366 35%, var(--bg)); color:var(--text); }
+.wa-msg .wa-template { border-style:dashed; }
+.wa-text { white-space:pre-wrap; }
+.wa-img { display:block; max-width:280px; max-height:320px; border-radius:6px; margin-bottom:4px; }
+.wa-msg audio { max-width:260px; }
+.wa-tick { letter-spacing:-2px; }
+.wa-tick.wa-read { color:#34b7f1; }
+.wa-tick.wa-failed { color:#b42318; letter-spacing:0; }
+.wa-fail { margin-top:4px; font-size:12px; color:#b42318; }
+.wa-compose { border-top:1px solid var(--border); background:var(--bg); }
+.wa-compose .teams-compose { border-top:0; }
+.wa-compose .wa-send { background:#25d366; }
+.wa-window { margin:6px 12px 0; font-size:12px; }
+.wa-window[hidden] { display:none; }
+.wa-closed { display:flex; gap:12px; align-items:center; justify-content:space-between; padding:12px 16px; font-size:13px; background:color-mix(in srgb, #e0a100 14%, var(--bg)); }
+.wa-closed[hidden] { display:none; }
+.wa-preview { padding:10px 12px; border-radius:8px; background:color-mix(in srgb, #25d366 14%, var(--bg)); white-space:pre-wrap; font-size:13px; min-height:2.5em; }
+#waCaseResults { max-height:320px; }
+#waCaseResults li { cursor:pointer; }
+.wa-setup label { display:block; margin:12px 0 4px; font-weight:600; font-size:13px; }
+.wa-setup input[type=text], .wa-setup input[type=password] { width:100%; box-sizing:border-box; padding:8px 10px; border:1px solid var(--border); border-radius:8px; font:inherit; background:var(--bg); color:var(--text); }
+.wa-copy { display:flex; gap:6px; }
+.wa-copy code { flex:1; padding:8px 10px; border-radius:8px; background:var(--bg-alt); border:1px solid var(--border); overflow-wrap:anywhere; font-size:12px; }
+.wa-ok { color:#1a7f37; font-weight:600; }
+/* Attach a photo or file (as in Telegram). */
+.wa-attached[hidden] { display:none !important; }
+.wa-attached { padding:6px 14px 0; font-size:12px; }
+.wa-attach { cursor:pointer; background:none; color:var(--muted); }
+.wa-link-btn { border:0; background:none; padding:0; color:var(--accent, #2563eb); font:inherit; font-size:12px; cursor:pointer; text-decoration:underline; }

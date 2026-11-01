@@ -1,0 +1,120 @@
+name: email-case-workspace
+x-app: &app
+  build: .
+  image: email-case-workspace:local
+  env_file: .env
+  environment:
+    ECW_DB_HOST: db
+    ECW_DB_PORT: 3306
+    ECW_DB_NAME: email_case_workspace
+    ECW_DB_USER: ecw
+    ECW_LOCAL_FEATURES: '1'
+    ECW_PRIVATE_MAILBOXES: '1'
+    ECW_ENCRYPTION_KEY_FILE: /run/ecw/encryption-key
+    TZ: UTC
+  volumes:
+    - app_storage:/opt/ecw/storage
+    - app_cache:/opt/ecw/cache
+    - app_logs:/opt/ecw/logs
+    - app_secrets:/run/ecw
+    # Backups land in ./backups on this computer, so they can be copied elsewhere.
+    - ./backups:/opt/ecw/backups
+    # Off-site copy (Settings -> Backups): point ECW_OFFSITE_DIR at a NAS share or a OneDrive / Google Drive folder.
+    - ${ECW_OFFSITE_DIR:-./backups-offsite}:/opt/ecw/offsite
+services:
+  db:
+    image: mysql:8.4
+    # The memory MySQL keeps mail in. 128 MB (MySQL's default) is gone by a few
+    # tens of thousands of emails and every screen then waits on the disk. Raise
+    # ECW_DB_MEMORY in .env on a big mailbox server (about half the server's RAM).
+    # No binary log: it is for copying the database to another MySQL server, which the app
+    # never does (its backups are lib/backup.php). It wrote every change twice and had grown to
+    # 22 GB beside 5.7 GB of data, and a restore was twice as slow because of it (2026-10-29).
+    command: [mysqld, '--innodb-buffer-pool-size=${ECW_DB_MEMORY:-512M}', '--disable-log-bin']
+    environment:
+      MYSQL_DATABASE: email_case_workspace
+      MYSQL_USER: ecw
+      MYSQL_PASSWORD: ${ECW_DB_PASSWORD:?Run the start script first}
+      MYSQL_ROOT_PASSWORD: ${ECW_DB_ROOT_PASSWORD:?Run the start script first}
+      TZ: UTC
+    volumes:
+      - database:/var/lib/mysql
+    healthcheck:
+      test: [CMD-SHELL, 'MYSQL_PWD="$$MYSQL_PASSWORD" mysql -h 127.0.0.1 -u ecw -D email_case_workspace -e "SELECT 1" >/dev/null 2>&1']
+      interval: 5s
+      timeout: 5s
+      retries: 40
+    restart: unless-stopped
+  init:
+    <<: *app
+    command: [php, bin/migrate.php]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: 'no'
+  web:
+    <<: *app
+    ports:
+      # ECW_BIND_ADDRESS=0.0.0.0 lets other devices on the network reach the app.
+      - '${ECW_BIND_ADDRESS:-127.0.0.1}:${ECW_HTTP_PORT:-8080}:80'
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: [CMD, curl, -fsS, http://localhost/other_things/web/login.php]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+  sync:
+    <<: *app
+    command: [php, bin/sync_daemon.php, --interval=15, --lifetime=3600]
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+  # Slow background work: text of HTML-only emails, reading attachments, the AI agents (bin/worker.php).
+  worker:
+    <<: *app
+    command: [php, bin/worker.php, --lifetime=3600]
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+  # Telegram (modules/telegram): keeps each person's connected Telegram account signed in.
+  # Its sign-ins stay in app_storage on this computer (storage/telegram), never in backups.
+  telegram:
+    <<: *app
+    command: [php, modules/telegram/bin/daemon.php]
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: [CMD-SHELL, 'test $$(( $$(date +%s) - $$(stat -c %Y /opt/ecw/storage/telegram/daemon-heartbeat 2>/dev/null || echo 0) )) -lt 90']
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
+    restart: unless-stopped
+  # Optional HTTPS: docker compose --profile https up -d   (see scripts/https-setup.ps1)
+  https:
+    image: caddy:2
+    profiles: [https]
+    ports:
+      - '${ECW_BIND_ADDRESS:-127.0.0.1}:${ECW_HTTPS_PORT:-8443}:443'
+    environment:
+      ECW_HTTPS_HOSTS: ${ECW_HTTPS_HOSTS:-localhost}
+      ECW_PROXY_SECRET: ${ECW_PROXY_SECRET:-}
+    volumes:
+      - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on:
+      - web
+    restart: unless-stopped
+volumes:
+  caddy_data:
+  database:
+  app_storage:
+  app_cache:
+  app_logs:
+  app_secrets:

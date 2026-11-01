@@ -2,60 +2,95 @@
 
 # Eleon
 
-**Every email about one matter. One timeline.**
+**Open-source email, cases, collaboration and AI.**
 
-Eleon is a self-hosted email and case workspace for Outlook and Gmail. Related
-customer, supplier and internal conversations sit together on a shared timeline,
-with a clear owner and next step.
+Eleon is a self-hosted email workspace for Outlook and Gmail. Read and send mail,
+create cases from related conversations, collaborate with your team, and use
+optional AI to understand the work and prepare your next action.
 
-[Explore the product and interactive demo](https://eleon.app/) ·
-[View capabilities](https://eleon.app/features/) ·
-[Request early access](mailto:georgebilalis@hotmail.com?subject=Eleon%20early%20access)
+[Product and interactive demo](https://eleon.app/) ·
+[Capabilities](https://eleon.app/features/) ·
+[Self-hosting](https://eleon.app/self-host/) ·
+[Deployment and support](mailto:georgebilalis@hotmail.com?subject=Eleon%20services)
 
-## Release status
+## Why Eleon?
 
-**The public Free-core source release is being prepared.** This repository currently
-contains project information, contribution guidance and the release roadmap.
-There is no public application source package or installable release here yet.
-Cloning this repository does not install Eleon.
+A customer, supplier and colleague can discuss the same matter in separate threads.
+Eleon puts those conversations on one chronological case timeline, with an owner,
+status, internal notes, checklist and next step. Microsoft and Google continue
+delivering your email; Eleon connects to your existing accounts.
 
-The development version contains paid functionality mixed into shared components.
-We are separating that code before publishing the Free core. Pro and Business
-source code will remain private. Follow this repository for release updates or
-contact George for early access.
+## Included in the open-source application
 
-## The Free core
+- Outlook/Gmail email, folders, search, drafts, replies and supported two-way sync.
+- Case creation, linked conversations, internal discussion, checklists and next steps.
+- Shared mailboxes, assignments, contacts, templates and supported Outlook calendar.
+- Optional AI summaries, reply drafts, translation, tool-assisted actions and background routines.
+- Automation, response-time targets, reports and shared drafts.
+- Installed Teams, WhatsApp, Telegram and case-chat integrations.
+- Account security, audit, retention, legal hold, exports and backup capabilities.
 
-The intended public distribution covers everyday Outlook/Gmail email, shared
-mailboxes, case timelines, internal notes, checklists, next steps, contacts,
-templates, supported Outlook calendar, exports and essential administration.
+**All installed functionality is available without a paid software license or trial.**
+Administrators still control roles, feature access and user views. Connections need
+provider configuration. AI is optional: choose your provider or compatible local
+endpoint. Provider subscriptions, API/model usage and hosting may have their own costs.
 
-Self-hosting requires your own infrastructure and mail-provider configuration.
-Provider subscriptions, hosting and external services are separate. Features and
-requirements for the public build will be documented and tested before release.
+## Status
 
-Pro and Business are separate paid offerings, including additional AI,
-collaboration, automation and governance capabilities. See the
-[package comparison](https://eleon.app/packages/) for the current product scope.
+This is the first public **preview**, not a production-readiness certification.
+The full current application snapshot is published under AGPL-3.0-only. The former
+Free/Pro/Business feature split no longer limits the Community build.
 
-## Installation
+A fresh Docker build, database migrations, first-account setup, login and account
+access checks were verified in isolation. See [release verification](docs/PUBLIC-RELEASE.md).
+Live Outlook/Gmail OAuth, external AI and messaging providers require your own
+credentials; those external integrations were not exercised in that release check.
 
-Public installation instructions and a versioned package will be published after
-the Free-core export passes clean-install checks. Do not use instructions for the
-private development build as public release instructions.
+## Quick start
 
-## Contributing and questions
+Install Git and Docker Desktop (Linux containers), or Docker Engine with Compose.
+Clone the repository and enter its folder:
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md) and the [roadmap](docs/ROADMAP.md).
-Use GitHub issues for general ideas and reproducible public-release problems.
-Do not post email content, access tokens, application secrets or personal data.
-Report security concerns privately using [SECURITY.md](SECURITY.md).
+```sh
+git clone https://github.com/giorgosbil/eleon.git
+cd eleon
+```
+
+On Windows PowerShell:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\Start.ps1
+```
+
+On Linux/macOS:
+
+```sh
+sh start.sh
+```
+
+The startup script generates local passwords and an encryption key, builds the
+application and initializes MySQL. Use the first-admin setup code printed by the
+script at <http://localhost:8080/other_things/web/setup.php>. Create your account,
+then connect your mail provider. Open `welcome.html` for the configuration guide.
+The internal `/other_things/web/` path is retained for installation compatibility.
+
+Keep `.env`, the encryption key, database and backups private. Back up the key with
+your data. Read [local setup](docs/LOCAL.md) and [INSTALL.md](INSTALL.md) for provider
+registration, configuration, ports, HTTPS and operational requirements.
+
+## Hosting and services
+
+Self-hosting the software is free. Paid work can cover deployment, migration,
+training and support. Managed hosting is planned; no hosted subscription is sold
+from this repository. [Contact George](mailto:georgebilalis@hotmail.com) to discuss a setup.
+
+## Contribute
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md), propose focused changes and use synthetic
+data in issues and tests. Report vulnerabilities privately using [SECURITY.md](SECURITY.md).
 
 ## License
 
-Files published in this repository are under the
-[GNU Affero General Public License v3.0](LICENSE), unless marked otherwise.
-Copyright © 2026 George Bilalis. The planned public Free core will use AGPL-3.0-only.
-This license does not grant rights to unpublished Pro or Business source.
-
-Maintainer: George Bilalis · [eleon.app](https://eleon.app/)
+Eleon original application code: [AGPL-3.0-only](LICENSE).
+Copyright © 2026 George Bilalis. Third-party components retain their own licenses;
+see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

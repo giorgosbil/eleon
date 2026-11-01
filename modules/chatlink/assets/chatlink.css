@@ -1,0 +1,62 @@
+/* Chats in cases (modules/chatlink): choosing messages in a chat, the AI's suggestion, the chat columns on the case. */
+.chat-actions-slot { display:contents; }
+.chl-link-btn { white-space:nowrap; }
+.chl-link-btn.active { background:var(--accent-soft); border-color:var(--accent, #2563eb); }
+
+/* Choosing: every message is a target, the chosen ones stand out. */
+.chl-selecting .teams-msg[data-id] { cursor:pointer; user-select:none; -webkit-user-select:none; position:relative; border-radius:10px; }
+.chl-selecting .teams-msg[data-id]::before { content:""; position:absolute; left:4px; top:50%; width:16px; height:16px; margin-top:-8px; border:2px solid var(--border); border-radius:50%; background:var(--bg); box-sizing:border-box; }
+.chl-selecting .teams-msg[data-id] { padding-left:28px; }
+.chl-selecting .teams-msg[data-id]:hover { background:color-mix(in srgb, var(--accent, #2563eb) 6%, transparent); }
+.chl-selecting .teams-msg.chl-selected { background:color-mix(in srgb, var(--accent, #2563eb) 12%, transparent); }
+.chl-selecting .teams-msg.chl-selected::before { border-color:var(--accent, #2563eb); background:var(--accent, #2563eb); box-shadow:inset 0 0 0 3px var(--bg); }
+.chl-selecting .teams-msg a { pointer-events:none; }
+/* The selection rectangle (drag a box, as in Windows). */
+.chl-selecting { position:relative; user-select:none; -webkit-user-select:none; }
+.chl-banding, .chl-banding * { cursor:crosshair !important; }
+.chl-band { position:absolute; z-index:5; pointer-events:none; border:1px solid var(--accent, #2563eb); background:color-mix(in srgb, var(--accent, #2563eb) 14%, transparent); border-radius:2px; }
+.teams-msg.chl-suggested .teams-msg-bubble { box-shadow:0 0 0 2px color-mix(in srgb, #a855f7 55%, transparent); }
+
+.chl-bar { display:flex; gap:8px; align-items:center; padding:8px 14px; border-top:1px solid var(--border); background:color-mix(in srgb, var(--accent, #2563eb) 8%, var(--bg)); font-size:13px; }
+.chl-bar[hidden] { display:none; }
+.chl-bar-text { flex:1; min-width:0; }
+
+/* The AI's suggestion, above the conversation. */
+.chl-suggest { display:flex; gap:8px; align-items:center; padding:8px 14px; border-bottom:1px solid var(--border); background:color-mix(in srgb, #a855f7 9%, var(--bg)); font-size:13px; }
+.chl-suggest[hidden] { display:none; }
+.chl-suggest-text { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.chl-suggest-x { border:0; background:none; color:var(--muted); font-size:18px; line-height:1; cursor:pointer; padding:0 4px; }
+
+/* Already in a case. */
+.chl-mark { display:block; margin-top:4px; font-size:11px; color:var(--muted); text-decoration:none; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:260px; }
+.chl-mark:hover { text-decoration:underline; }
+
+.chl-cases { max-height:320px; }
+.chl-cases li { cursor:pointer; }
+.chl-toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%); z-index:1000; max-width:min(560px, calc(100vw - 32px)); padding:10px 16px; border-radius:10px; background:var(--text); color:var(--bg); font-size:13px; box-shadow:0 6px 24px rgba(0,0,0,.25); }
+.chl-toast[hidden] { display:none; }
+.chl-toast a { color:inherit; font-weight:600; }
+
+.chl-unlink { margin-left:6px; border:0; background:none; color:var(--muted); cursor:pointer; font-size:14px; line-height:1; padding:0 2px; opacity:.45; }
+.chl-unlink:hover, .chl-unlink:focus-visible { opacity:1; color:#b42318; }
+
+/* On the case: a chat column's row is a burst of its messages, styled like the email bubbles. */
+.tl-cell-chat { display:block; }
+.chl-tl { display:flex; flex-direction:column; gap:3px; min-width:0; }
+.chl-tl-msg { display:flex; flex-direction:column; max-width:86%; min-width:0; }
+.chl-tl-msg.dir-incoming { align-self:flex-start; }
+.chl-tl-msg.dir-outgoing { align-self:flex-end; align-items:flex-end; }
+.chl-tl-from { margin:4px 2px 1px; font-size:12px; font-weight:600; color:var(--text-2, var(--muted)); }
+.chl-tl-bubble { border:1px solid var(--border); border-radius:12px; padding:6px 10px 4px; background:var(--bg); box-shadow:0 1px 4px rgba(0,0,0,.06); min-width:0; font-size:13px; }
+.chl-tl-msg.dir-incoming .chl-tl-bubble { border-left:3px solid var(--border); }
+.chl-tl-msg.dir-outgoing .chl-tl-bubble { border-left:3px solid var(--accent); background:#fbfcff; }
+.chl-tl-body { white-space:pre-wrap; overflow-wrap:anywhere; }
+.chl-tl-body p { margin:0; white-space:normal; }
+.chl-tl-file { margin-top:3px; font-size:12px; color:var(--muted); }
+.chl-tl-time { margin-top:2px; text-align:right; font-size:11px; color:var(--muted); white-space:nowrap; }
+.chl-tl-gap { align-self:center; margin:4px 0; padding:1px 10px; border-radius:999px; background:var(--bg-alt); border:1px dashed var(--border); font-size:11px; color:var(--muted); }
+.tl-head-chat .tl-head-name i { margin-right:2px; }
+:root[data-theme="dark"] .chl-tl-msg.dir-outgoing .chl-tl-bubble { background:var(--bg); }
+.chl-follow { display:flex; gap:6px; align-items:center; margin:10px 0 4px; font-size:13px; }
+.tl-head-actions button.is-on { border-color:var(--accent); color:var(--accent); }
+.tl-reply-dialog textarea { width:100%; box-sizing:border-box; padding:8px 10px; border:1px solid var(--border); border-radius:8px; font:inherit; resize:vertical; }

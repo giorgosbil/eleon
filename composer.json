@@ -1,0 +1,5 @@
+{"name":"zetisis/email-case-workspace","type":"project","require":{
+        "php": "^8.4",
+        "danog/madelineproto": "^8.9",
+        "ezyang/htmlpurifier": "4.19.0"
+    },"config":{"sort-packages":true}}

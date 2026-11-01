@@ -1,0 +1,341 @@
+/*
+ * Email Case Workspace — case timeline.
+ *
+ * THE LAYOUT, AND WHY IT IS ONE GRID
+ * ----------------------------------
+ * Everything below the header is a single CSS grid: column 1 is the time rail,
+ * columns 2..n are the threads. Every message is placed at an explicit
+ * (grid-row, grid-column).
+ *
+ * One grid — not a flex row of independently scrolling thread panels — is what
+ * makes the shared axis real. In separate panels each column packs its own
+ * messages and two bubbles side by side mean nothing; in one grid a row IS a
+ * moment, so a bubble's vertical position is a fact about when it happened, and
+ * the empty cells beside it are the finding: nobody else had said anything yet.
+ *
+ * Stickiness falls out of the same structure:
+ *   thread headers   position: sticky; top: 0     (survive vertical scroll)
+ *   time rail        position: sticky; left: 0    (survives horizontal scroll)
+ *   the corner cell  both, and a higher z-index
+ *
+ * Gap rows span the full width and carry the true elapsed time. Their HEIGHT is
+ * bucketed, never proportional — three days of silence must not produce three
+ * days' worth of pixels.
+ */
+
+.case-body { overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
+
+/* ------------------------------------------------------------ case header */
+.case-top {
+  flex: 0 0 auto; display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 20px; padding: 12px 18px; border-bottom: 1px solid var(--border); background: var(--bg);
+}
+.case-ident { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.case-ident h1 { font-size: 18px; margin: 0; letter-spacing: -0.01em; }
+.case-ident h1[contenteditable="true"] { outline: 2px solid var(--accent); border-radius: 4px; padding: 0 4px; }
+
+/* Only the fields the step lists. Not a CRM record. */
+.case-facts { display: flex; gap: 22px; margin: 8px 0 0; flex-wrap: wrap; }
+.case-facts div { display: flex; flex-direction: column; gap: 2px; }
+.case-facts dt { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.case-facts dd { margin: 0; font-size: 13px; color: var(--text); }
+.case-top-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+.case-top-actions .ghost { color: var(--text-2); text-decoration: none; padding: 7px 10px; }
+.case-top-actions button {
+  padding: 7px 12px; border: 1px solid var(--border); background: var(--bg);
+  border-radius: 6px; color: var(--text-2);
+}
+.case-top-actions button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.columns-menu .menu-body { width: 260px; max-height: 320px; overflow-y: auto; }
+.column-toggle { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); }
+
+.thread-picker { display: none; gap: 8px; align-items: center; padding: 8px 18px; border-bottom: 1px solid var(--border); }
+.thread-picker select { flex: 1; }
+
+/* ---------------------------------------------------------------- the grid */
+/* Keep the timeline scrollable within the available case content area. */
+.case-content { flex: 1 1 auto; display: flex; min-height: 0; }
+.tl-scroll { flex: 1 1 auto; overflow: auto; position: relative; background: var(--bg-alt); min-width: 0; }
+
+.timeline {
+  display: grid;
+  grid-template-columns: var(--rail-width, 74px) repeat(var(--columns, 1), minmax(340px, 1fr));
+  align-items: start;
+  min-width: min-content;   /* so columns keep their width and the area scrolls */
+}
+
+/* Headers -------------------------------------------------------------- */
+.tl-head {
+  position: sticky; top: 0; z-index: 2;
+  background: var(--bg); border-bottom: 1px solid var(--border); border-right: 1px solid var(--border);
+  padding: 10px 12px; min-height: 64px;
+}
+.tl-head.rail {
+  left: 0; z-index: 4;                 /* the corner: sticky in both directions */
+  display: flex; align-items: flex-end;
+  font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted);
+}
+.tl-head.rail { justify-content: center; padding: 10px 4px; font-size: 14px; }
+.tl-head-title { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.tl-head-name { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tl-head-meta { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tl-head-actions { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+.tl-head-actions button, .tl-head-actions a {
+  font-size: 11px; padding: 2px 7px; border: 1px solid var(--border); border-radius: 999px;
+  background: var(--bg); color: var(--text-2); text-decoration: none;
+}
+
+/* Time rail ------------------------------------------------------------ */
+.tl-rail {
+  position: sticky; left: 0; z-index: 1;
+  background: var(--bg-alt); border-right: 1px solid var(--border);
+  padding: 10px 6px 0; text-align: right;
+}
+.tl-rail-time { font: 500 11px/1.4 var(--mono); color: var(--text-2); white-space: nowrap; }
+.tl-rail-date { font-size: 10px; color: var(--muted); }
+
+/* Gap rows ------------------------------------------------------------- */
+.tl-gap {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; gap: 10px;
+  color: var(--muted); font-size: 11px;
+}
+.tl-gap::after { content: ""; flex: 1; border-top: 1px dashed var(--border); }
+.tl-gap-label {
+  position: sticky; left: 0;                /* stays readable while scrolling sideways */
+  background: var(--bg-alt); padding: 0 12px;
+  font: 500 11px/1 var(--mono); white-space: nowrap;
+}
+/* Six buckets (none..xl), matching lib/timeline.php's ecw_gap_size(). Kept
+ * small on purpose — the previous three-bucket scale is what made the gaps
+ * between messages read as more important than the messages themselves. */
+.tl-gap.size-xs { height: 8px; }
+.tl-gap.size-sm { height: 14px; }
+.tl-gap.size-md { height: 20px; }
+.tl-gap.size-lg { height: 28px; }
+.tl-gap.size-xl { height: 36px; }
+.tl-gap.new-day .tl-gap-label { color: var(--text-2); font-weight: 600; }
+.tl-gap.new-day::after { border-top-style: solid; }
+
+/* Bubbles ---------------------------------------------------------------
+ * Each cell is a flex box so the bubble can hug one side, WhatsApp-style,
+ * instead of spanning the full column — that alone is most of what made
+ * these read as spreadsheet rows rather than a conversation. */
+.tl-cell { display: flex; padding: 3px 10px; min-width: 0; }
+.tl-cell.dir-incoming { justify-content: flex-start; }
+.tl-cell.dir-outgoing { justify-content: flex-end; }
+
+.bubble {
+  max-width: 86%; min-width: 0;
+  border: 1px solid var(--border); border-radius: 12px; background: var(--bg);
+  box-shadow: 0 1px 4px rgba(0,0,0,.06); overflow: hidden;
+}
+/* Restrained direction styling: one accent edge, not a palette. */
+.bubble.incoming { border-left: 3px solid var(--border); }
+.bubble.outgoing { border-left: 3px solid var(--accent); background: #fbfcff; }
+.bubble.removed  { opacity: .6; }
+.bubble.target   { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.bubble-head { padding: 8px 12px 6px; }
+.bubble-from { font-weight: 600; font-size: 13px; }
+.bubble-email { font-size: 12px; color: var(--muted); word-break: break-all; }
+.bubble-time { font: 500 11px/1.4 var(--mono); color: var(--muted); margin-top: 2px; }
+/* Recipient line reuses .message-meta from app.css, shared with the reading pane. */
+
+.reply-ref {
+  margin: 6px 12px 0; padding: 6px 9px; border-left: 2px solid var(--border);
+  background: var(--bg-alt); border-radius: 0 6px 6px 0; font-size: 12px; color: var(--text-2);
+  width: calc(100% - 24px); text-align: left; cursor: default;
+}
+.reply-ref.clickable { cursor: pointer; }
+.reply-ref.clickable:hover { background: #eef1f6; }
+.reply-ref .who { font-weight: 600; }
+.reply-ref .snippet { color: var(--muted); display: block; margin-top: 2px; }
+
+/*
+ * Typography for the bubble's message content (.message-body, .message-quoted,
+ * .signature-content) comes from the shared rules in app.css — case.php loads
+ * it before case.css. Only bubble-specific chrome (padding, borders) lives here.
+ */
+.bubble-body { padding: 8px 12px; overflow-x: auto; }
+.bubble .message-signature { margin: 0 12px 8px; }
+.bubble-quote-toggle {
+  margin: 0 12px 8px; padding: 2px 9px; font-size: 12px;
+  border: 1px solid var(--border); border-radius: 999px; background: var(--bg-alt); color: var(--text-2);
+}
+.bubble-quoted { padding: 0 12px 10px; border-top: 1px dashed var(--border); }
+.bubble-attachments { padding: 0 12px 8px; }
+.bubble-actions { padding: 0 12px 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+.bubble-actions button, .bubble-actions a {
+  font-size: 12px; padding: 3px 9px; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--bg); color: var(--text-2); text-decoration: none;
+}
+
+.tl-empty, .tl-truncated { padding: 40px 20px; text-align: center; color: var(--muted); }
+.tl-truncated { padding: 14px; color: #9a3412; background: #fff7ed; border-top: 1px solid #fed7aa; }
+
+.tabs { display: flex; gap: 6px; }
+.tab { padding: 6px 12px; border: 1px solid var(--border); background: var(--bg); border-radius: 6px; color: var(--text-2); }
+.tab.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.tab-body { display: grid; gap: 10px; }
+
+/* ------------------------------------------------------------------ mobile
+ * One thread at a time, chosen from a picker, with the time rail intact — the
+ * server is asked for a single-column timeline so the gaps stay true for what
+ * is actually on screen. Four columns on a phone is not a smaller version of
+ * this layout, it is an unusable one. */
+@media (max-width: 860px) {
+  .case-top { flex-direction: column; gap: 10px; }
+  .thread-picker { display: flex; }
+  .timeline { grid-template-columns: 74px minmax(0, 1fr); --rail-width: 74px; }
+  .tl-head-actions { display: none; }
+  .pane.details { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
+/* Each fixed column is a thread; compact messages keep the case scannable. */
+.tl-head-participants { white-space: normal; overflow-wrap: anywhere; max-height: 3em; overflow: auto; }
+.bubble { width: calc(100% - 18px); max-width: calc(100% - 18px); }
+.bubble-body.is-collapsed { max-height: 300px; overflow: hidden; -webkit-mask-image: linear-gradient(to bottom, #000 72%, transparent 100%); mask-image: linear-gradient(to bottom, #000 72%, transparent 100%); }
+/* One clear bar under a folded email (overrides the generic toggle style in app.css). */
+.bubble .bubble-expand { display: flex; align-items: center; justify-content: center; gap: 6px; width: calc(100% - 24px); min-height: 0; margin: 2px 12px 10px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-alt); color: var(--accent); cursor: pointer; font: inherit; font-size: 12.5px; font-weight: 600; }
+.bubble .bubble-expand::after { content: '▾'; font-size: 11px; }
+.bubble .bubble-expand[aria-expanded="true"]::after { content: '▴'; }
+.bubble .bubble-expand:hover { border-color: var(--accent); background: var(--bg); }
+.bubble-expand[hidden] { display: none; }
+.bubble-expand:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.bubble-head .message-meta { max-height: 2.8em; overflow: hidden; }
+.bubble-email { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* A quiet vertical rule through every timeline row, including empty cells. */
+.timeline { background-image:none; }
+.tl-divider { width:9px; justify-self:end; margin-right:-4px; align-self:stretch; z-index:3; cursor:col-resize; touch-action:none; position:relative; }
+.tl-divider::after { content:""; position:absolute; top:0; bottom:0; left:4px; width:1px; background:var(--border); }
+.tl-divider:hover::after, .tl-divider.dragging::after, .tl-divider:focus-visible::after { width:3px; background:var(--accent); }
+.sender-avatar { display:inline-flex; width:30px; height:30px; align-items:center; justify-content:center; border-radius:50%; color:#40556b; background:#e7edf4; font:600 11px/1 system-ui; float:left; margin:0 8px 4px 0; }
+#caseComposerWindow { position:fixed; right:24px; bottom:20px; z-index:60; width:min(1050px,95vw); height:80vh; min-width:320px; min-height:360px; max-width:100vw; max-height:95vh; resize:both; overflow:hidden; display:flex; flex-direction:column; background:white; border:1px solid #d7e0e9; border-radius:12px; box-shadow:0 12px 48px #172b4d35; }
+#caseComposerWindow header { display:flex; justify-content:space-between; padding:10px 16px; cursor:move; touch-action:none; border-bottom:1px solid #e1e7ee; }
+#caseComposerWindow header button { border:0; background:transparent; font-size:22px; cursor:pointer; }
+#caseComposerWindow iframe { width:100%; flex:1; min-height:0; border:0; }
+/* Over the frame until its composer is filled (case.js openCaseComposer). */
+#caseComposerWindow .case-composer-loading { position:absolute; inset:45px 0 0; display:flex; align-items:center; justify-content:center; gap:8px; background:var(--bg, #fff); color:var(--muted, #64748b); font-size:14px; }
+
+@media(max-width:860px) {
+  .case-body { height:auto; min-height:100dvh; overflow:auto; }
+  .case-top { padding:10px; gap:8px; min-width:0; }
+  .case-top > div { max-width:100%; min-width:0; }
+  .case-ident h1 { overflow-wrap:anywhere; }
+  .case-facts { gap:8px 16px; }
+  .case-facts > div { min-width:0; max-width:100%; }
+  .case-facts select { max-width:100%; }
+  .case-top-actions { flex-wrap:wrap; width:100%; }
+  .thread-picker { padding:8px 10px; flex-shrink:0; }
+  .thread-picker[hidden] { display:none; }
+  .case-content { flex:none; height:70dvh; min-height:320px; width:100%; }
+  .tl-scroll { overscroll-behavior-x:contain; -webkit-overflow-scrolling:touch; }
+  .timeline { min-width:0; width:100%; grid-template-columns:60px minmax(0,1fr); --rail-width:60px; }
+  .timeline.mobile-compare { grid-template-columns:60px repeat(var(--columns),minmax(260px,75vw)); width:max-content; min-width:100%; }
+  .tl-head { padding:8px; }
+  .tl-head-actions { display:flex; }
+  .bubble { min-width:0; overflow-wrap:anywhere; }
+  .tl-rail { padding:8px 4px; font-size:10px; }
+}
+
+/* Legal hold */
+.case-hold-badge { display: inline-flex; align-items: center; gap: 5px; margin-left: 8px; padding: 2px 9px; border-radius: 999px; background: #fff4e5; color: #8a4b00; border: 1px solid #f5c98b; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.case-hold-badge[hidden] { display: none; }
+#caseHoldBtn.active { color: #8a4b00; background: #fff4e5; border-color: #f5c98b; }
+:root:is([data-theme="dark"],[data-theme="graphite"]) .case-hold-badge, :root:is([data-theme="dark"],[data-theme="graphite"]) #caseHoldBtn.active { background: #3a2a12; color: #f5c98b; border-color: #6b4a1a; }
+
+/* ‹ previous · next › next to the case name (case-nav.js) */
+.case-nav { display:inline-flex; align-items:center; gap:2px; margin-left:6px; padding:2px; border:1px solid var(--border); border-radius:999px; background:var(--bg); }
+.case-nav[hidden] { display:none; }
+.case-nav-btn { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; color:var(--text-2); font-size:12px; text-decoration:none; cursor:pointer; }
+.case-nav-btn:hover { background:var(--bg-alt); color:var(--accent); }
+.case-nav-btn.is-off { opacity:.3; cursor:default; pointer-events:none; }
+.case-nav-pos { min-width:0; padding:0 4px; font:500 11px var(--mono); color:var(--muted); white-space:nowrap; }
+.case-nav-pos:empty { display:none; }
+/* ------------------------------------------------- folded header (case-compact.js)
+ * Scrolling the timeline down folds the details into one line and the thread
+ * headers into their titles, all on one line: the case name shortens first.
+ * Desktop only. */
+.case-compact-btn.active { color: var(--accent); }
+/* Full header on a desktop window: name and next step on the left, the buttons on the
+ * right (wrapping onto a second line rather than squeezing the name), and the facts on
+ * the whole width underneath, instead of all of it in a narrow column beside the buttons. */
+@media (min-width: 1101px) {
+  body:not(.case-compact) .case-top { display: grid; grid-template-columns: minmax(360px, 1fr) auto; column-gap: 20px; row-gap: 4px; align-items: start; }
+  body:not(.case-compact) .case-top-main { display: contents; }
+  body:not(.case-compact) .case-top-main > * { grid-column: 1 / -1; }
+  body:not(.case-compact) .case-top .case-ident { grid-column: 1; grid-row: 1; min-width: 0; }
+  body:not(.case-compact) .case-top .cn-wrap { grid-column: 1; grid-row: 2; justify-self: start; }
+  body:not(.case-compact) .case-top-actions { grid-column: 2; grid-row: 1 / span 2; flex-wrap: wrap; justify-content: flex-end; align-content: flex-start; min-width: 0; }
+}
+.case-facts-mini { display: none; }
+@media (max-width: 860px) { .case-compact-btn { display: none; } }
+@media (min-width: 861px) {
+  .case-compact .case-top { padding-top: 7px; padding-bottom: 7px; }
+  .case-compact .case-top-main { display: flex; align-items: center; gap: 12px; flex: 1 1 auto; min-width: 0; }
+  .case-compact .case-ident { flex: 0 1 auto; flex-wrap: nowrap; min-width: 0; }
+  .case-compact .case-ident h1 { min-width: 8em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .case-compact .case-ident > :not(h1) { flex-shrink: 0; }
+  /* The next step gives way (shortened with "…", its full text on hover) instead of
+   * lying over the name and the buttons; the buttons with words show only their icon. */
+  /* Too little room for it all on one line: the buttons go to a second line on the right,
+   * never on top of the name or the next step. */
+  .case-compact .case-top-actions { margin-left: auto; }
+  .case-compact .case-ident h1 { min-width: 9em; max-width: 22vw; }
+  .case-compact #caseRenameBtn { display: none; }   /* double-click the name still renames it */
+  .case-compact .cn-wrap { display: flex; align-items: center; gap: 6px; flex: 0 1 auto; min-width: 8em; max-width: 40%; margin: 0; }
+  .case-compact .cn-pill { flex: 1 1 auto; min-width: 0; }
+  .case-compact .cn-wrap > :not(.cn-pill):not(.cn-pop) { flex: 0 0 auto; }
+  .case-compact .case-top-actions { gap: 6px; }
+  .case-compact .case-top-actions :is(#casePanelToggle, #caseExportBtn, #caseTeamsBtn, #caseAssistantBtn) { font-size: 0; gap: 0; padding: 7px 10px; }
+  .case-compact .case-top-actions :is(#casePanelToggle, #caseExportBtn, #caseTeamsBtn, #caseAssistantBtn) > i { font-size: 14px; margin: 0; }
+  .case-compact .case-facts, .case-compact .case-facts-toggle { display: none; }
+  .case-compact .case-memory { display: none; }
+
+  .case-compact .case-facts-mini { display: inline-flex; flex: 0 1 auto; max-width: 30%; align-items: center; gap: 6px; min-width: 0; overflow: hidden; padding: 3px 6px; border: 1px solid transparent; border-radius: 8px; background: none; color: var(--text-2); font: inherit; font-size: 12.5px; cursor: pointer; white-space: nowrap; animation: cfm-in .18s ease-out; }
+  .case-facts-mini:hover { border-color: var(--border); background: var(--bg-alt); }
+  .case-facts-mini:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .cfm-chip { display: inline-flex; align-items: center; gap: 4px; }
+  .cfm-chip + .cfm-chip::before { content: '·'; margin-right: 4px; color: var(--muted); }
+  .cfm-chip > .fa { font-size: 10.5px; color: var(--muted); }
+  .cfm-status { font-weight: 600; color: var(--text); }
+  .cfm-status.is-waiting { color: #b45309; }
+  .cfm-status.is-closed { color: var(--muted); }
+  .cfm-chip.is-late { color: var(--danger); font-weight: 600; }
+  .cfm-caret { color: var(--muted); font-size: 11px; }
+  @keyframes cfm-in { from { opacity: 0; transform: translateY(-3px); } }
+  /* Not room for the short facts beside the name, the next step and the buttons. */
+  @media (min-width: 1101px) {
+    .case-compact .case-top { flex-wrap: wrap; row-gap: 6px; }
+    .case-compact .case-top-main { flex: 1 1 560px; }
+  }
+  @media (max-width: 1500px) { .case-compact .case-facts-mini { display: none; } }
+
+  /* Thread headers: the title line only. The rest drops down over the
+   * timeline on hover (or a tap, .is-peek) so nothing below moves. */
+  .case-compact .tl-head { min-height: 0; padding-top: 7px; padding-bottom: 7px; }
+  .case-compact .tl-head.rail { padding-top: 7px; padding-bottom: 7px; align-items: center; }
+  .case-compact .tl-head-more {
+    position: absolute; top: 100%; left: -1px; right: -1px; z-index: 1;
+    padding: 2px 12px 10px; background: var(--bg);
+    border: 1px solid var(--border); border-top: 0; border-radius: 0 0 10px 10px;
+    box-shadow: 0 10px 24px -12px #0f172a40;
+    visibility: hidden; opacity: 0; transform: translateY(-4px);
+    transition: opacity .12s ease, transform .12s ease, visibility 0s linear .12s;
+  }
+  .case-compact .tl-head:not(.rail):is(:hover, :focus-within, .is-peek) { z-index: 6; }
+  .case-compact .tl-head:is(:hover, :focus-within, .is-peek) .tl-head-more {
+    visibility: visible; opacity: 1; transform: none;
+    transition: opacity .12s ease .18s, transform .12s ease .18s, visibility 0s linear .18s;
+  }
+  .case-compact .tl-head.is-peek .tl-head-more, .case-compact .tl-head:focus-within .tl-head-more { transition-delay: 0s; }
+  .case-compact .tl-head-title { cursor: default; }
+}
+/* Drafts and scheduled emails under a conversation (case.js draftCard): Mail's card, fitted to the column. */
+.tl-drafts .thread-draft { margin: 6px 8px; }
+.tl-drafts { align-self: start; }

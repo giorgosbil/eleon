@@ -1,0 +1,1267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Welcome — setup guide</title>
+<!--
+  The setup guide and settings editor. Open this file in a browser (double-click);
+  it needs no internet and no server. It writes the .env file the start scripts and
+  docker compose read. Nothing typed here is sent anywhere or stored: only the
+  non-secret choices and the finished steps are remembered in this browser.
+
+  Two views:
+    wizard    one step at a time; Next opens only when the step is finished
+              (its box ticked, its fields right, or the page's own check passed)
+    settings  "Change settings": every setting on one page, for an installation
+              that already runs
+
+  Pictures: the "Show me with pictures" buttons open the GUIDES below, with the
+  images from the welcome-images/ folder next to this file (list in its README.md).
+  A picture not added yet shows its file name instead.
+
+  Product and company names are placeholders: change BRAND below once they are decided.
+-->
+<style>
+:root {
+  --bg: #f6f7f9; --card: #ffffff; --text: #1d2330; --muted: #5d6677; --line: #dde1e8;
+  --accent: #2f5aa8; --accent-soft: #e6edf9; --ok: #1a7f37; --ok-soft: #e3f4e8; --warn: #9a6700; --warn-soft: #fbf1d9;
+  --bad: #b42318; --bad-soft: #fbe7e5; --code: #f0f2f5; --shadow: 0 1px 2px rgba(20, 30, 50, .06), 0 4px 16px rgba(20, 30, 50, .05);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12151b; --card: #1a1e26; --text: #e6e9ef; --muted: #9aa3b2; --line: #2c323d;
+    --accent: #7aa2ec; --accent-soft: #1f2b42; --ok: #5cc27a; --ok-soft: #17301f; --warn: #e0b04f; --warn-soft: #33290f;
+    --bad: #f07a6e; --bad-soft: #3a1c19; --code: #232833; --shadow: none;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12151b; --card: #1a1e26; --text: #e6e9ef; --muted: #9aa3b2; --line: #2c323d;
+  --accent: #7aa2ec; --accent-soft: #1f2b42; --ok: #5cc27a; --ok-soft: #17301f; --warn: #e0b04f; --warn-soft: #33290f;
+  --bad: #f07a6e; --bad-soft: #3a1c19; --code: #232833; --shadow: none;
+}
+* { box-sizing: border-box; }
+html { scroll-padding-top: 16px; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+a { color: var(--accent); overflow-wrap: anywhere; }
+code, pre, .mono { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 13px; }
+code { background: var(--code); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+
+.hero { background: linear-gradient(135deg, var(--accent) 0%, #5b3fa8 100%); color: #fff; padding: 36px 16px 30px; }
+.hero-in { max-width: 1120px; margin: 0 auto; }
+.hero-top { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; margin-bottom: 6px; }
+.hero h1 { margin: 0 0 8px; font-size: clamp(26px, 4vw, 36px); line-height: 1.2; }
+.hero p { margin: 0; max-width: 680px; font-size: 16px; opacity: .92; }
+.hero .facts { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 18px; font-size: 14px; opacity: .95; padding: 0; list-style: none; }
+.hero .facts li::before { content: "✓ "; }
+.hero-btn { background: transparent; border: 1px solid rgba(255,255,255,.5); color: #fff; border-radius: 8px; padding: 4px 10px; font: 13px system-ui, sans-serif; cursor: pointer; }
+.hero-btn:hover { background: rgba(255,255,255,.12); }
+
+.wrap { max-width: 1120px; margin: 0 auto; padding: 24px 16px 64px; display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 28px; }
+@media (max-width: 860px) { .wrap { grid-template-columns: minmax(0, 1fr); } .toc { position: static !important; } .toc ol { display: none; } }
+
+/* ---- the step list on the left */
+.toc { position: sticky; top: 16px; align-self: start; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; box-shadow: var(--shadow); }
+.toc h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px; }
+.toc ol { list-style: none; margin: 0; padding: 0; }
+.toc li[hidden] { display: none; }
+.toc-item { width: 100%; display: flex; gap: 10px; align-items: center; padding: 6px 8px; border: 0; border-radius: 8px; background: transparent; color: var(--text); font: inherit; font-size: 14px; text-align: left; cursor: pointer; }
+.toc-item:hover { background: var(--accent-soft); }
+.toc .num { flex: none; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 600; background: var(--code); color: var(--muted); }
+.toc li.current .toc-item { background: var(--accent-soft); font-weight: 600; }
+.toc li.current .num { background: var(--accent); color: #fff; }
+.toc li.done .num { background: var(--ok); color: #fff; }
+.toc li.done .num span { display: none; }
+.toc li.done .num::after { content: "✓"; }
+.toc li.locked .toc-item { color: var(--muted); cursor: not-allowed; opacity: .55; }
+.toc li.locked .toc-item:hover { background: transparent; }
+.progress { margin-top: 12px; font-size: 13px; color: var(--muted); }
+.bar { height: 6px; border-radius: 3px; background: var(--code); margin-top: 6px; overflow: hidden; }
+.bar span { display: block; height: 100%; width: 0; background: var(--ok); transition: width .3s; }
+.toc-foot { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
+.linkish { border: 0; background: none; padding: 0; color: var(--accent); font: inherit; font-size: 14px; cursor: pointer; text-decoration: underline; }
+
+/* ---- your computer / who uses it */
+.choices { display: grid; gap: 10px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; box-shadow: var(--shadow); margin-bottom: 20px; }
+.choice-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.choice-row > span { font-weight: 600; min-width: 150px; }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; background: transparent; color: var(--text); padding: 7px 14px; font: inherit; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+
+/* ---- a step (a slide in the wizard, a section in settings) */
+.step { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 22px 22px 18px; margin-bottom: 18px; box-shadow: var(--shadow); }
+.step[hidden] { display: none; }
+body[data-view="wizard"] .step:not(.active) { display: none; }
+body[data-view="wizard"]:not([data-at="s-need"]) .choices { display: none; }
+body[data-view="settings"] .step:not([data-settings]) { display: none; }
+body[data-view="settings"] .toc, body[data-view="settings"] .slide-nav, body[data-view="settings"] .mark-done, body[data-view="settings"] .step-head .num { display: none; }
+body[data-view="settings"] .wrap { grid-template-columns: minmax(0, 1fr); max-width: 900px; }
+body:not([data-view="settings"]) .settings-bar { display: none; }
+.step-head { display: flex; gap: 12px; align-items: flex-start; }
+.step-head .num { flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; background: var(--accent-soft); color: var(--accent); }
+.step.done .step-head .num { background: var(--ok); color: #fff; }
+.step h2 { margin: 2px 0 2px; font-size: 20px; }
+.step .why { margin: 0; color: var(--muted); }
+.step-body { margin-top: 14px; }
+.step-body > :first-child { margin-top: 0; }
+.step h3 { font-size: 15px; margin: 18px 0 6px; }
+.step ol, .step ul { padding-left: 22px; }
+.step li { margin: 4px 0; }
+.mark-done { margin-top: 18px; display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600; border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; cursor: pointer; }
+.mark-done:has(input:checked) { background: var(--ok-soft); border-color: var(--ok); }
+.mark-done input { width: 20px; height: 20px; accent-color: var(--ok); cursor: pointer; }
+
+.slide-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+.slide-nav .reason { flex: 1; min-width: 180px; text-align: right; font-size: 13px; color: var(--muted); }
+.slide-nav .next { margin-left: auto; }
+.slide-nav .reason + .next { margin-left: 0; }
+
+.autocheck { display: flex; gap: 8px; align-items: flex-start; border-radius: 8px; padding: 10px 14px; margin: 12px 0; font-size: 14px; background: var(--code); }
+.autocheck::before { flex: none; font-weight: 700; }
+.autocheck.wait::before { content: "…"; }
+.autocheck.ok { background: var(--ok-soft); }
+.autocheck.ok::before { content: "✓"; color: var(--ok); }
+.autocheck.bad { background: var(--warn-soft); }
+.autocheck.bad::before { content: "!"; color: var(--warn); }
+.autocheck:empty { display: none; }
+
+details.stuck { margin-top: 14px; border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; font-size: 14px; }
+details.stuck summary { cursor: pointer; font-weight: 600; color: var(--muted); }
+details.stuck[open] summary { margin-bottom: 4px; }
+details.stuck dt { font-weight: 600; margin-top: 10px; }
+details.stuck dd { margin: 2px 0 0; }
+
+.cmd { position: relative; margin: 8px 0 12px; }
+.cmd pre { margin: 0; background: var(--code); border: 1px solid var(--line); border-radius: 8px; padding: 12px 84px 12px 14px; overflow-x: auto; white-space: pre; }
+.copy { position: absolute; top: 7px; right: 7px; border: 1px solid var(--line); background: var(--card); color: var(--text); border-radius: 6px; padding: 4px 10px; font: 13px system-ui, sans-serif; cursor: pointer; }
+.copy:hover { border-color: var(--accent); }
+.value { display: flex; gap: 8px; align-items: stretch; margin: 6px 0 12px; }
+.value code { flex: 1; display: flex; align-items: center; padding: 8px 10px; border: 1px solid var(--line); }
+.value .copy { position: static; }
+
+.note { border-radius: 8px; padding: 10px 14px; margin: 12px 0; font-size: 14px; background: var(--accent-soft); }
+.note.warn { background: var(--warn-soft); }
+.note.ok { background: var(--ok-soft); }
+.note strong:first-child { margin-right: 4px; }
+
+.form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 18px; margin: 12px 0; }
+@media (max-width: 640px) { .form { grid-template-columns: minmax(0, 1fr); } }
+.form .full { grid-column: 1 / -1; }
+.field label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+.field input[type=text], .field input[type=password], .field input[type=number], .field input[type=email], .field select {
+  width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--text); font: inherit;
+}
+.field input:focus, .field select:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+.field .hint { font-size: 13px; color: var(--muted); margin-top: 3px; }
+.field .hint.bad { color: var(--bad); }
+.field .hint.good { color: var(--ok); }
+.check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; }
+.check input { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); }
+fieldset { border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px 14px; margin: 14px 0; }
+legend { font-weight: 700; padding: 0 6px; }
+
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 10px; }
+.tabs button { border: 1px solid var(--line); background: var(--bg); color: var(--text); border-radius: 999px; padding: 5px 14px; font: inherit; font-size: 14px; cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.tabpanel[hidden] { display: none; }
+
+.envbox { width: 100%; min-height: 240px; resize: vertical; background: var(--code); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 10px 0; }
+.btn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--card); color: var(--text); border-radius: 8px; padding: 9px 16px; font: inherit; font-weight: 600; cursor: pointer; text-decoration: none; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn:hover { filter: brightness(1.05); }
+.btn:disabled { opacity: .45; cursor: not-allowed; filter: none; }
+.btn[hidden] { display: none; }
+.btn.photos { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); font-size: 14px; padding: 7px 14px; }
+.btn.photos svg { width: 18px; height: 18px; }
+.photo-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 12px; }
+.file-label { cursor: pointer; }
+.file-label input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.status { font-size: 14px; color: var(--muted); }
+
+.settings-bar { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; box-shadow: var(--shadow); margin-bottom: 18px; }
+.settings-bar h2 { margin: 0 0 4px; font-size: 18px; }
+.settings-bar p { margin: 0 0 8px; color: var(--muted); }
+
+.finish { text-align: center; padding: 18px 4px 8px; }
+.finish .big { width: 64px; height: 64px; margin: 0 auto 12px; border-radius: 50%; display: grid; place-items: center; background: var(--ok); color: #fff; font-size: 32px; font-weight: 700; }
+.finish h2 { font-size: 24px; }
+.finish p { color: var(--muted); max-width: 520px; margin: 6px auto 0; }
+.finish .actions { justify-content: center; margin-top: 18px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 13px; color: var(--muted); font-weight: 600; }
+.table-scroll { overflow-x: auto; }
+.perm { display: inline-block; margin: 2px 4px 2px 0; }
+footer { color: var(--muted); font-size: 13px; text-align: center; padding: 0 16px 40px; }
+
+/* ---- the pictures window */
+dialog.guide { width: min(980px, calc(100vw - 24px)); max-height: calc(100vh - 24px); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; background: var(--card); color: var(--text); box-shadow: 0 10px 40px rgba(0,0,0,.3); }
+dialog.guide::backdrop { background: rgba(10, 15, 25, .65); }
+.g-head { display: flex; align-items: center; gap: 12px; }
+.g-head h2 { flex: 1; margin: 0; font-size: 18px; }
+.g-close { border: 0; background: transparent; color: var(--muted); font-size: 26px; line-height: 1; cursor: pointer; padding: 0 4px; }
+.g-fig { margin: 12px 0 10px; height: min(60vh, 560px); background: var(--code); border: 1px solid var(--line); border-radius: 10px; display: grid; place-items: center; overflow: hidden; }
+.g-fig a { display: contents; }
+.g-fig img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; cursor: zoom-in; }
+.g-fig img[hidden], .g-missing[hidden] { display: none; }
+.g-missing { padding: 24px; text-align: center; color: var(--muted); font-size: 14px; }
+.g-text { margin: 0 0 12px; font-size: 15px; min-height: 3em; }
+.g-nav { display: flex; align-items: center; gap: 12px; }
+.g-nav .g-count { flex: 1; text-align: center; color: var(--muted); font-size: 14px; }
+.g-dots { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
+.g-dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+.g-dots span.on { background: var(--accent); }
+</style>
+</head>
+<body data-view="wizard">
+
+<header class="hero">
+  <div class="hero-in">
+    <div class="hero-top">
+      <button type="button" class="hero-btn" data-view-go="settings" id="heroSettings">Change settings of an installation</button>
+      <button type="button" class="hero-btn" data-view-go="wizard" id="heroWizard" hidden>Setup guide</button>
+      <button type="button" class="hero-btn" id="themeBtn" title="Light or dark">◐ Theme</button>
+    </div>
+    <h1>Welcome to <span data-brand="product"></span></h1>
+    <p>Your email, organised into cases: several conversations about one issue on one timeline, shared with your team, on your own server. This page takes you from nothing to a running workspace, one step at a time.</p>
+    <ul class="facts">
+      <li>About 30–40 minutes</li>
+      <li>Runs on your own computer or server</li>
+      <li>Your mail never passes through us</li>
+      <li>Nothing you type here leaves this page</li>
+    </ul>
+  </div>
+</header>
+
+<div class="wrap">
+  <aside class="toc" aria-label="Steps">
+    <h2>Steps</h2>
+    <ol id="toc"></ol>
+    <div class="progress"><span id="progressText"></span><div class="bar"><span id="progressBar"></span></div></div>
+    <div class="toc-foot"><button type="button" class="linkish" data-view-go="settings">Change settings, commands and help</button></div>
+  </aside>
+
+  <main>
+    <section class="settings-bar" aria-label="Change settings">
+      <h2>Change settings</h2>
+      <p>For an installation that already runs: load its <code>.env</code>, change what you need, download it again and apply it (bottom of the page).</p>
+      <button type="button" class="btn" data-view-go="wizard">← Back to the setup guide</button>
+    </section>
+
+    <section class="choices" aria-label="Your situation">
+      <div class="choice-row"><span>Your computer</span>
+        <div class="seg" data-choice="os"><button type="button" data-v="windows">Windows</button><button type="button" data-v="linux">Ubuntu / Linux</button><button type="button" data-v="mac">macOS</button></div>
+      </div>
+      <div class="choice-row"><span>Who will use it</span>
+        <div class="seg" data-choice="mode"><button type="button" data-v="local">Only me, on this computer</button><button type="button" data-v="server">The whole office (a server)</button></div>
+      </div>
+    </section>
+
+    <!-- 1 ---------------------------------------------------------------- -->
+    <section class="step" id="s-need" data-step data-title="What you need" data-min="2">
+      <div class="step-head"><div class="num">1</div><div><h2>What you need</h2><p class="why">Choose your computer and who will use it (above), then check these.</p></div></div>
+      <div class="step-body">
+        <ul>
+          <li><strong>A computer that stays on</strong>: <span data-os="windows">Windows 10 or 11 (Pro, Enterprise or Education)</span><span data-os="linux">Ubuntu 22.04 or newer</span><span data-os="mac">macOS 13 or newer</span>, 8 GB memory, 50 GB free disk, internet.</li>
+          <li><strong>Your mail</strong>: Microsoft 365 / Outlook, or Google Workspace. You (or your IT person) must be able to register an app in its admin portal. Step 4 shows how.</li>
+          <li data-mode="server"><strong>The server's address</strong> on your network: its IP address (for example <code>192.168.1.20</code>) or a name (for example <code>cases.office.lan</code>).</li>
+          <li><strong>A Pro or Business licence key</strong> is <em>not</em> needed. The free version has no user or mailbox limit. A key only adds the paid modules (last step).</li>
+        </ul>
+        <label class="mark-done"><input type="checkbox" data-confirm="s-need"> I have these</label>
+      </div>
+    </section>
+
+    <!-- 2 ---------------------------------------------------------------- -->
+    <section class="step" id="s-docker" data-step data-title="Get the app and Docker" data-min="8">
+      <div class="step-head"><div class="num">2</div><div><h2>Get the app and Docker</h2><p class="why">Docker runs the app, its database and the mail sync in their own boxes, so nothing else on the computer is touched.</p></div></div>
+      <div class="step-body">
+        <h3>Install Docker</h3>
+        <div data-os="windows">
+          <div class="photo-row"></div>
+          <ol>
+            <li>Download <a href="https://www.docker.com/products/docker-desktop/" target="_blank" rel="noopener">Docker Desktop</a> and install it. Restart the computer.</li>
+            <li>Open Docker Desktop and wait until it says <strong>Engine running</strong>.</li>
+            <li>Docker Desktop → <strong>Settings → General</strong> → tick <strong>Start Docker Desktop when you sign in</strong>.</li>
+          </ol>
+        </div>
+        <div data-os="linux"><div class="cmd"><pre>curl -fsSL https://get.docker.com | sudo sh</pre></div></div>
+        <div data-os="mac"><ol><li>Download <a href="https://www.docker.com/products/docker-desktop/" target="_blank" rel="noopener">Docker Desktop for Mac</a>, install it and open it once.</li></ol></div>
+
+        <h3>Get the app</h3>
+        <p>On the project's GitHub page press <strong>Code → Download ZIP</strong> and unpack it, or clone it:</p>
+        <div class="cmd"><pre id="cloneCmd"></pre></div>
+        <p>Put the folder somewhere permanent, for example <code id="folderHint"></code>, and write below where it is. The commands on this page then start by going into it.</p>
+        <div class="form">
+          <div class="field full">
+            <label for="f-folder">Where is the app folder?</label>
+            <input type="text" id="f-folder" data-key="folder" autocomplete="off" spellcheck="false">
+            <div class="hint" id="folderFieldHint"><span data-os="windows">In File Explorer, right-click the folder (the one with <code>compose.yaml</code> inside) → <strong>Copy as path</strong>, and paste it here.</span><span data-os="mac">In Finder, right-click the folder (the one with <code>compose.yaml</code> inside) while holding <kbd>Option</kbd> → <strong>Copy … as Pathname</strong>, and paste it here.</span><span data-os="linux">The full path of the folder with <code>compose.yaml</code> inside.</span> Empty = the example above.</div>
+          </div>
+        </div>
+        <p data-os="windows" class="note"><strong>Tip:</strong> in that folder, right-click on an empty spot → <strong>Open in Terminal</strong>, and you are in the right place.</p>
+        <details class="stuck"><summary>Stuck?</summary><dl>
+          <dt data-os="windows">Docker Desktop says WSL is missing or must be updated</dt>
+          <dd data-os="windows">Open the Start menu, type <strong>Terminal</strong>, right-click → <strong>Run as administrator</strong>, run <code>wsl --update</code>, then restart the computer.</dd>
+          <dt data-os="windows,mac">"Virtualization is not enabled"</dt>
+          <dd data-os="windows,mac">It must be switched on in the computer's BIOS / UEFI settings (often called <em>Intel VT-x</em> or <em>AMD SVM</em>). Your IT person or the computer maker's support page shows how.</dd>
+          <dt>Download ZIP gives a folder with a long name</dt>
+          <dd>That is fine. Rename it if you like, but keep everything that is inside it together.</dd>
+        </dl></details>
+        <label class="mark-done"><input type="checkbox" data-confirm="s-docker"> Docker runs and the folder is unpacked</label>
+      </div>
+    </section>
+
+    <!-- 3 ---------------------------------------------------------------- -->
+    <section class="step" id="s-where" data-step data-settings data-title="Where it runs" data-min="2">
+      <div class="step-head"><div class="num">3</div><div><h2>Where it runs</h2><p class="why">The address people open, and the ports. Everything after this uses these values.</p></div></div>
+      <div class="step-body">
+        <div class="note" id="loadNote">
+          <strong>Changing an existing installation?</strong> Load its <code>.env</code> first: every field fills in, and the passwords in it are kept.
+          <div class="actions" style="margin-bottom:0"><label class="btn file-label">Load my .env<input type="file" id="envFile" accept=".env,text/plain,*/*"></label><span class="status" id="loadStatus"></span></div>
+        </div>
+        <div class="form">
+          <div class="field full" data-mode="server">
+            <label for="f-host">Server address</label>
+            <input type="text" id="f-host" data-key="host" placeholder="192.168.1.20 or cases.office.lan" autocomplete="off" spellcheck="false">
+            <div class="hint" id="hostHint">The IP address or name people on your network use to reach this computer.</div>
+          </div>
+          <div class="field">
+            <label for="f-httpPort">Port on this computer</label>
+            <input type="number" id="f-httpPort" data-key="httpPort" min="1" max="65535">
+            <div class="hint">Change it only if 8080 is already used by something else.</div>
+          </div>
+          <div class="field" data-mode="server">
+            <label for="f-httpsPort">HTTPS port for the office</label>
+            <input type="number" id="f-httpsPort" data-key="httpsPort" min="1" max="65535">
+            <div class="hint">People open the app on this port, with a secure connection.</div>
+          </div>
+        </div>
+        <h3>Is the port free?</h3>
+        <p>Run this <span data-mode="server">on the server, </span>in <span data-os="windows">PowerShell (Terminal)</span><span data-os="linux,mac">a terminal</span>. It says <strong>free</strong>, or which port to use instead: then type that port above and run it again.</p>
+        <div class="cmd"><pre id="portCmd"></pre></div>
+        <p>People will open the app at:</p>
+        <div class="value"><code class="mono" data-out="appUrl"></code><button type="button" class="copy" data-copy-out="appUrl">Copy</button></div>
+        <p data-mode="server" class="note"><strong>Why HTTPS?</strong> Microsoft and Google only send people back to a secure address (anything but <code>localhost</code> must be <code>https://</code>). Step 9 turns it on.</p>
+        <details class="stuck"><summary>Stuck?</summary><dl>
+          <dt data-mode="server">How do I find the server's address?</dt>
+          <dd data-mode="server"><span data-os="windows">On the server open Terminal and run <code>ipconfig</code>: the <strong>IPv4 Address</strong> line.</span><span data-os="linux">On the server run <code>hostname -I</code>: the first address.</span><span data-os="mac">On the server: <strong>System Settings → Network</strong>, the connection in use, its IP address.</span> Ask your IT person to keep this address fixed for the server.</dd>
+          <dt>The check says a port is busy</dt>
+          <dd>Another program (or another copy of this app) uses it<span data-os="windows">, or Windows keeps it for Hyper-V / WSL</span>. Type the port the check suggests in the field above and run the check again until every port says free.</dd>
+        </dl></details>
+        <label class="mark-done"><input type="checkbox" data-confirm="s-where"> The address is right</label>
+      </div>
+    </section>
+
+    <!-- 4 ---------------------------------------------------------------- -->
+    <section class="step" id="s-mail" data-step data-settings data-title="Connect your mail provider" data-min="10">
+      <div class="step-head"><div class="num">4</div><div><h2>Connect your mail provider</h2><p class="why">Once, for your whole company: register the app with Microsoft or Google, so people can connect their mailbox with their normal sign-in. Paste the two values you get at the end into the fields below.</p></div></div>
+      <div class="step-body">
+        <div class="tabs" role="tablist">
+          <button type="button" role="tab" data-tab="ms" aria-selected="true">Microsoft 365 / Outlook</button>
+          <button type="button" role="tab" data-tab="google" aria-selected="false">Google Workspace</button>
+        </div>
+
+        <div class="tabpanel" data-panel="ms">
+          <div class="photo-row"></div>
+          <ol>
+            <li>Open the <a href="https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade" target="_blank" rel="noopener">Microsoft Entra admin center → App registrations</a> and press <strong>New registration</strong>. You need to be an administrator of your Microsoft 365.</li>
+            <li><strong>Name</strong>: anything your colleagues recognise, for example <span data-brand="product"></span>.</li>
+            <li><strong>Supported account types</strong>: <em>Accounts in any organizational directory (Multitenant)</em>. <span class="hint">Choose <em>…and personal Microsoft accounts</em> instead if people use Outlook.com / Hotmail addresses, and tick the box below.</span></li>
+            <li><strong>Redirect URI</strong>: platform <strong>Web</strong>, and exactly this address:
+              <div class="value"><code class="mono" data-out="redirect"></code><button type="button" class="copy" data-copy-out="redirect">Copy</button></div>
+            </li>
+            <li>Press <strong>Register</strong>. On the page that opens, copy the <strong>Application (client) ID</strong> into the field below.</li>
+            <li><strong>Certificates &amp; secrets → New client secret</strong> → 24 months → <strong>Add</strong>. Copy the <strong>Value</strong> column (not the <em>Secret ID</em>) into the field below at once: Microsoft shows it only once.</li>
+            <li><strong>API permissions → Add a permission → Microsoft Graph → Delegated permissions</strong>, add these, then press <strong>Grant admin consent</strong>:
+              <div><span class="perm"><code>openid</code></span><span class="perm"><code>profile</code></span><span class="perm"><code>offline_access</code></span><span class="perm"><code>User.Read</code></span><span class="perm"><code>Mail.ReadWrite</code></span><span class="perm"><code>Mail.Send</code></span></div>
+              <div class="hint">Also add these if you use them: <code>Calendars.ReadWrite</code> (calendar), <code>MailboxSettings.ReadWrite</code> (out of office), <code>Mail.ReadWrite.Shared</code> + <code>Mail.Send.Shared</code> (shared mailboxes), <code>Chat.ReadWrite</code> (Microsoft Teams, Pro).</div>
+            </li>
+          </ol>
+          <div class="form">
+            <div class="field">
+              <label for="f-msId">Application (client) ID</label>
+              <input type="text" id="f-msId" data-key="msId" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+              <div class="hint" id="msIdHint"></div>
+            </div>
+            <div class="field">
+              <label for="f-msSecret">Client secret Value</label>
+              <input type="password" id="f-msSecret" data-key="msSecret" data-secret placeholder="the Value, not the Secret ID" autocomplete="off" spellcheck="false">
+              <div class="hint" id="msSecretHint"></div>
+            </div>
+            <label class="check full"><input type="checkbox" data-key="msPersonal"> People also use personal Outlook.com / Hotmail / Live addresses</label>
+          </div>
+          <p class="note"><strong>The secret expires</strong> after the time you chose. Put a reminder in your calendar a month before, create a new one, then use <button type="button" class="linkish" data-view-go="settings">Change settings</button> (top of this page).</p>
+        </div>
+
+        <div class="tabpanel" data-panel="google" hidden>
+          <div class="photo-row"></div>
+          <ol>
+            <li>Open the <a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">Google Cloud console</a>, signed in with your Google Workspace admin account, and create a project.</li>
+            <li><strong>APIs &amp; Services → Library</strong> → search <strong>Gmail API</strong> → <strong>Enable</strong>.</li>
+            <li><strong>Google Auth Platform → Branding / Audience</strong> (the "OAuth consent screen"): app name, support email, and audience <strong>Internal</strong>. Internal means only your company's accounts, with no review by Google and no limits.</li>
+            <li><strong>Data access → Add or remove scopes</strong>: <code>openid</code>, <code>…/auth/userinfo.email</code>, <code>…/auth/userinfo.profile</code>, <code>…/auth/gmail.modify</code>, <code>…/auth/gmail.settings.basic</code>.</li>
+            <li><strong>Clients → Create client</strong> → type <strong>Web application</strong> → under <strong>Authorized redirect URIs</strong> add exactly:
+              <div class="value"><code class="mono" data-out="redirect"></code><button type="button" class="copy" data-copy-out="redirect">Copy</button></div>
+            </li>
+            <li>Press <strong>Create</strong> and copy the <strong>Client ID</strong> and <strong>Client secret</strong> into the fields below.</li>
+          </ol>
+          <div class="form">
+            <div class="field">
+              <label for="f-gId">Client ID</label>
+              <input type="text" id="f-gId" data-key="gId" placeholder="…apps.googleusercontent.com" autocomplete="off" spellcheck="false">
+              <div class="hint" id="gIdHint"></div>
+            </div>
+            <div class="field">
+              <label for="f-gSecret">Client secret</label>
+              <input type="password" id="f-gSecret" data-key="gSecret" data-secret placeholder="GOCSPX-…" autocomplete="off" spellcheck="false">
+              <div class="hint" id="gSecretHint"></div>
+            </div>
+          </div>
+          <p class="note warn"><strong>Personal @gmail.com addresses:</strong> Google only allows them in "testing" mode, where each connection must be renewed every 7 days. Use Google Workspace accounts with the audience set to Internal.</p>
+        </div>
+        <details class="stuck"><summary>Stuck?</summary><dl>
+          <dt>I cannot see "New registration", or "Grant admin consent" is grey</dt>
+          <dd>Your account is not an administrator of your Microsoft 365. Ask your IT person to do this step, or to give you the <em>Application Administrator</em> role.</dd>
+          <dt>Which one is the secret Value?</dt>
+          <dd>Under <strong>Certificates &amp; secrets</strong> there are two columns: <em>Value</em> (long, with letters and symbols like <code>~</code>) and <em>Secret ID</em> (looks like the client ID). Copy <strong>Value</strong>. If the page was closed, it is hidden for good: make a new secret.</dd>
+          <dt>Later, Microsoft says <em>redirect URI mismatch</em> (AADSTS50011)</dt>
+          <dd>The Redirect URI in the app registration must be exactly <code data-out="redirect"></code>, letter for letter.</dd>
+        </dl></details>
+        <label class="mark-done"><input type="checkbox" data-confirm="s-mail"> The app is registered and its values are pasted</label>
+      </div>
+    </section>
+
+    <!-- 5 ---------------------------------------------------------------- -->
+    <section class="step" id="s-optional" data-step data-settings data-title="Backups and extras" data-min="2">
+      <div class="step-head"><div class="num">5</div><div><h2>Backups and extras</h2><p class="why">The defaults are good. Change them only if you need to, then press Next.</p></div></div>
+      <div class="step-body">
+        <fieldset>
+          <legend>Backups</legend>
+          <div class="form">
+            <label class="check full"><input type="checkbox" data-key="backups"> Make a backup every day (into the <code>backups</code> folder)</label>
+            <div class="field">
+              <label for="f-keep">Keep the newest</label>
+              <input type="number" id="f-keep" data-key="keep" min="1" max="365">
+              <div class="hint">backups (one per day)</div>
+            </div>
+            <div class="field">
+              <label for="f-offsite">Off-site copy folder (optional)</label>
+              <input type="text" id="f-offsite" data-key="offsite" placeholder="D:/OneDrive/Backups or //nas/backups" spellcheck="false">
+              <div class="hint">A NAS share or a cloud-synced folder, so a broken disk does not take the backups too.</div>
+            </div>
+            <div class="field full">
+              <label for="f-backupPw">Backup password (optional)</label>
+              <input type="password" id="f-backupPw" data-key="backupPw" data-secret autocomplete="new-password">
+              <div class="hint">Encrypts the backups. Without it no backup can be restored, so keep it in your password manager. It can also be set later in the app (Settings → Security).</div>
+            </div>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Performance</legend>
+          <div class="form">
+            <div class="field">
+              <label for="f-dbMem">Database memory</label>
+              <select id="f-dbMem" data-key="dbMem"><option value="">512 MB (up to ~10 mailboxes)</option><option value="1G">1 GB</option><option value="2G">2 GB (big mailboxes, years of mail)</option><option value="4G">4 GB</option></select>
+              <div class="hint">About half of the computer's memory at most.</div>
+            </div>
+            <div class="field">
+              <label for="f-push">Contact email for phone notifications</label>
+              <input type="email" id="f-push" data-key="push" placeholder="it@yourcompany.com" spellcheck="false">
+              <div class="hint">Sent to the browser push services, as they ask.</div>
+            </div>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Built-in AI (Pro)</legend>
+          <p class="hint">Only with the Pro modules. You can instead connect your own AI service later in the app (Settings → AI).</p>
+          <div class="form">
+            <div class="field">
+              <label for="f-ai">Anthropic API key (optional)</label>
+              <input type="password" id="f-ai" data-key="ai" data-secret placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
+            </div>
+            <div class="field">
+              <label for="f-aiDaily">AI requests per workspace per day</label>
+              <input type="number" id="f-aiDaily" data-key="aiDaily" min="1" max="100000">
+            </div>
+          </div>
+        </fieldset>
+      </div>
+    </section>
+
+    <!-- 6 ---------------------------------------------------------------- -->
+    <section class="step" id="s-env" data-step data-settings data-title="Save the settings file" data-min="2">
+      <div class="step-head"><div class="num">6</div><div><h2>Save the settings file (<code>.env</code>)</h2><p class="why">Everything from the steps before, as the file the app reads. It is built from what you typed; to change it, go back and change the fields, not this text.</p></div></div>
+      <div class="step-body">
+        <div class="actions">
+          <button type="button" class="btn primary" id="downloadEnv">Download .env</button>
+          <button type="button" class="btn" id="copyEnv">Copy</button>
+          <span class="status" id="envStatus"></span>
+        </div>
+        <div class="note warn" id="reloadNote" hidden>
+          <strong>Load your .env again.</strong> These settings came from an existing installation, but its passwords are not remembered by this page. Load the <code>.env</code> again (under "Where it runs") before saving, so they are kept.
+          <div class="actions" style="margin-bottom:0"><button type="button" class="btn" id="newInstall">No, this is a new installation</button></div>
+        </div>
+        <textarea class="envbox mono" id="envOut" readonly spellcheck="false" wrap="off" aria-label="The .env file"></textarea>
+        <ol>
+          <li>Put the file in the app folder (next to <code>compose.yaml</code>), named exactly <code>.env</code>. If a <code>.env</code> is already there, replace it only if you loaded it before: otherwise its passwords are lost and the app can no longer open its database.</li>
+          <li>Some browsers save it as <code>env</code>, <code>_env</code> or <code>.env.txt</code>: rename it to <code>.env</code>.<span data-os="windows"> In File Explorer turn on <strong>View → Show → File name extensions</strong> first, to see the real name.</span></li>
+          <li data-os="mac">Files starting with a dot are hidden in Finder: press <kbd>⌘ Shift .</kbd> to see them.</li>
+          <li><strong>Keep this file private.</strong> It holds the passwords and secrets. Never email it or put it on GitHub.</li>
+        </ol>
+        <p class="note" id="envPasswordsNote"></p>
+        <label class="mark-done"><input type="checkbox" data-confirm="s-env"> <span><code>.env</code> is in the app folder</span></label>
+      </div>
+    </section>
+
+    <!-- 7 ---------------------------------------------------------------- -->
+    <section class="step" id="s-start" data-step data-title="Start it" data-min="8">
+      <div class="step-head"><div class="num">7</div><div><h2>Start it</h2><p class="why">The first start downloads and builds everything: 5 to 10 minutes. This page notices by itself when the app is running.</p></div></div>
+      <div class="step-body">
+        <p>Open <span data-os="windows"><strong>Terminal</strong> (Start → type Terminal)</span><span data-os="linux,mac">a terminal</span> and run these lines. The first one goes into the app folder, the second starts the app:</p>
+        <div class="cmd"><pre id="startCmd"></pre></div>
+        <ul>
+          <li>It is finished when the last lines say <strong>Container … Healthy</strong> (or <strong>Started</strong>) and <strong>Ready</strong>. You need nothing from these lines: the next step gets the setup code for you.</li>
+          <li>It starts by itself after every restart of the computer<span data-os="windows,mac"> (as long as Docker Desktop starts when you sign in)</span>.</li>
+        </ul>
+        <p class="autocheck" id="startCheck"></p>
+        <details class="stuck"><summary>Stuck?</summary><dl>
+          <dt>"Cannot find path" / "Start.ps1 is not recognized" / "No such file or directory"</dt>
+          <dd>The first line did not reach the app folder. Check <strong>Where is the app folder?</strong> in step 2: it must be the folder that has <code>compose.yaml</code> inside.</dd>
+          <dt>"Cannot connect to the Docker daemon" / "Start Docker Desktop"</dt>
+          <dd>Docker is not running. Open Docker Desktop, wait for <strong>Engine running</strong>, and run the command again.</dd>
+          <dt>"port is already allocated"</dt>
+          <dd>Something else uses that port. Go back to step 3, choose another port, save the <code>.env</code> again (step 6) and run the command again.</dd>
+          <dt>The terminal says it is ready, but this page keeps waiting</dt>
+          <dd>Some browsers do not let a page opened from a file check other addresses. Open <a data-out-href="setupUrl" target="_blank" rel="noopener"><span data-out="setupUrl"></span></a> yourself; if it opens, tick the box below.</dd>
+        </dl></details>
+        <label class="mark-done"><input type="checkbox" data-confirm="s-start"> It says Ready</label>
+      </div>
+    </section>
+
+    <!-- 8 ---------------------------------------------------------------- -->
+    <section class="step" id="s-admin" data-step data-title="Create your account" data-min="2">
+      <div class="step-head"><div class="num">8</div><div><h2>Create your account</h2><p class="why">The first account is the administrator of your workspace.</p></div></div>
+      <div class="step-body">
+        <ol>
+          <li><strong>Copy your setup code.</strong> Run this in the terminal<span data-os="windows,mac">: it shows the code and puts it on the clipboard</span><span data-os="linux">: it shows the code, select it and copy it</span>.
+            <div class="cmd"><pre id="codeCmd"></pre></div>
+          </li>
+          <li>On this computer, open <a data-out-href="setupUrl" target="_blank" rel="noopener"><span data-out="setupUrl"></span></a><span data-os="windows"> (the start script may have opened it already)</span>.</li>
+          <li>In <strong>Setup code</strong>, paste the code (<kbd data-os="windows,linux">Ctrl+V</kbd><kbd data-os="mac">⌘V</kbd>; the field shows dots).</li>
+          <li>Enter your company name, your name, email and a password of 10 characters or more.</li>
+          <li>Press <strong>Create workspace</strong> and sign in.</li>
+        </ol>
+        <details class="stuck"><summary>Stuck?</summary><dl>
+          <dt>The page does not open</dt>
+          <dd>Run <code class="sudo">docker compose ps</code> in the app folder: <code>web</code> must say <strong>healthy</strong>. If not, look at <code class="sudo">docker compose logs --tail=100 web</code>.</dd>
+          <dt>"Setup is already done"</dt>
+          <dd>The administrator account exists: sign in on the normal page instead.</dd>
+        </dl></details>
+        <label class="mark-done"><input type="checkbox" data-confirm="s-admin"> I can sign in</label>
+      </div>
+    </section>
+
+    <!-- 9 ---------------------------------------------------------------- -->
+    <section class="step" id="s-https" data-step data-title="Open it to the office" data-mode="server" data-min="5">
+      <div class="step-head"><div class="num">9</div><div><h2>Open it to the office (HTTPS)</h2><p class="why">A secure address for everyone on your network, with its own certificate.</p></div></div>
+      <div class="step-body">
+        <h3>On the server</h3>
+        <div class="cmd"><pre id="httpsCmd"></pre></div>
+        <p>It saves a file <code>caddy-root.crt</code> in the app folder: the certificate that makes browsers trust the address.</p>
+        <h3>On every computer that uses the app</h3>
+        <div class="photo-row">
+          
+          
+        </div>
+        <ol>
+          <li>Copy <code>caddy-root.crt</code> to that computer and double-click it.</li>
+          <li>Windows: <strong>Install Certificate → Local Machine → Place all certificates in the following store → Trusted Root Certification Authorities</strong> → Finish. Mac: add it to Keychain Access and set it to <strong>Always Trust</strong>. Phones: open the file and install it as a trusted certificate.</li>
+          <li>Open <a data-out-href="appUrl" target="_blank" rel="noopener"><span data-out="appUrl"></span></a>. There should be no "Not secure" warning.</li>
+        </ol>
+        <p class="autocheck" id="httpsCheck"></p>
+        <details class="stuck"><summary>Stuck?</summary><dl>
+          <dt>"Not secure" or "Your connection is not private"</dt>
+          <dd>The certificate is not installed on that computer, or it went into the wrong store. On Windows it must be <strong>Local Machine → Trusted Root Certification Authorities</strong>. Close every browser window and open the address again.</dd>
+          <dt>It opens on the server but not from other computers</dt>
+          <dd>The firewall blocks the port: run the second line of the command above on the server. Check that the address in step 3 is the server's network address, not <code>localhost</code>.</dd>
+        </dl></details>
+        <label class="mark-done"><input type="checkbox" data-confirm="s-https"> It opens from another computer</label>
+      </div>
+    </section>
+
+    <!-- 10 --------------------------------------------------------------- -->
+    <section class="step" id="s-app" data-step data-title="First steps in the app" data-min="5">
+      <div class="step-head"><div class="num">10</div><div><h2>First steps in the app</h2><p class="why">Five minutes, and your team can start.</p></div></div>
+      <div class="step-body">
+        <div class="photo-row"></div>
+        <ol>
+          <li><strong>Settings → Mailbox → Connect</strong>: sign in with your Microsoft or Google account. Mail starts arriving within a minute.
+            <span class="hint">"Need admin approval"? A Microsoft 365 administrator signs in once and ticks <em>Consent on behalf of your organization</em>.</span></li>
+          <li><strong>Settings → Users → Invite</strong>: each colleague gets a link, sets their own password and connects their own mailbox.</li>
+          <li><strong>Settings → Backups</strong>: check that a backup was made, and the off-site copy if you set one.</li>
+          <li><strong>Settings → System health</strong>: everything should be green.</li>
+          <li><em>Optional</em> — <strong>Settings → License</strong>: a Pro or Business key adds AI, automation, reports and response times, Microsoft Teams, WhatsApp, deals, and (Business) sign-in with Microsoft, audit log and legal hold. The first 30 days after the paid modules are installed are a free trial.</li>
+        </ol>
+        <details class="stuck"><summary>Stuck?</summary><dl>
+          <dt>Microsoft: <em>not configured as a multi-tenant application</em></dt>
+          <dd>App registration → <strong>Authentication</strong> → Supported account types → <em>Multitenant</em>.</dd>
+          <dt>Microsoft: <em>invalid client secret</em> (AADSTS7000215)</dt>
+          <dd>The Secret ID was pasted instead of the Value, or the secret expired. Make a new one (step 4) and use <button type="button" class="linkish" data-view-go="settings">Change settings</button>.</dd>
+          <dt>No mail arrives</dt>
+          <dd><strong>Settings → System health</strong> shows why. Most often the mailbox needs to sign in again (Settings → Mailbox → Reconnect).</dd>
+        </dl></details>
+        <label class="mark-done"><input type="checkbox" data-confirm="s-app"> My mailbox is connected</label>
+      </div>
+    </section>
+
+    <!-- the end of the wizard ------------------------------------------- -->
+    <section class="step" id="s-finish">
+      <div class="finish">
+        <div class="big">✓</div>
+        <h2>Your workspace is ready</h2>
+        <p>Keep this page: it is also how you change the settings later, with the everyday commands and help.</p>
+        <div class="actions">
+          <a class="btn primary" data-out-href="appUrl" target="_blank" rel="noopener">Open the app</a>
+          <button type="button" class="btn" data-view-go="settings">Change settings, commands and help</button>
+          <button type="button" class="btn" id="reviewSteps">Look at the steps again</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- reference (settings view) --------------------------------------- -->
+    <section class="step" id="s-later" data-settings data-title="Apply, commands and help">
+      <div class="step-head"><div class="num">?</div><div><h2>Apply, commands and help</h2><p class="why">After you saved the new <code>.env</code> above.</p></div></div>
+      <div class="step-body">
+        <h3>Apply a change</h3>
+        <ol>
+          <li>Replace the old <code>.env</code> in the app folder with the one you downloaded above.</li>
+          <li>Run this in the app folder:</li>
+        </ol>
+        <div class="cmd"><pre id="applyCmd"></pre></div>
+        <h3>Everyday commands</h3>
+        <p>Run them in the app folder (the first row goes there).</p>
+        <div class="table-scroll"><table>
+          <thead><tr><th>What</th><th>Command</th></tr></thead>
+          <tbody id="dailyCmds"></tbody>
+        </table></div>
+        <h3>If something is wrong</h3>
+        <div class="table-scroll"><table>
+          <thead><tr><th>Problem</th><th>Do this</th></tr></thead>
+          <tbody>
+            <tr><td>The page does not open</td><td><code class="sudo">docker compose ps</code>: <code>web</code> must say <strong>healthy</strong>. If not, apply again (above) and look at <code class="sudo">docker compose logs --tail=100 web</code>.</td></tr>
+            <tr><td>"Not secure" warning</td><td>Install <code>caddy-root.crt</code> on that computer (step "Open it to the office").</td></tr>
+            <tr><td>Microsoft: <em>redirect URI mismatch</em> (AADSTS50011)</td><td>The address in the Microsoft app registration must be exactly <code data-out="redirect"></code>.</td></tr>
+            <tr><td>Microsoft: <em>not configured as a multi-tenant application</em></td><td>App registration → <strong>Authentication</strong> → Supported account types → <em>Multitenant</em>.</td></tr>
+            <tr><td>Microsoft: <em>invalid client secret</em> (AADSTS7000215)</td><td>The Secret ID was pasted instead of the Value, or the secret expired. Make a new one and paste it above.</td></tr>
+            <tr><td>Port 8080 or 8443 is busy</td><td>Pick another port above, save the <code>.env</code> and apply.</td></tr>
+            <tr><td>Mail stops arriving</td><td>Settings → System health shows why; most often the mailbox needs to sign in again (Settings → Mailbox → Reconnect).</td></tr>
+          </tbody>
+        </table></div>
+        <h3>Keep safe</h3>
+        <ul>
+          <li>The <code>.env</code> file: the passwords and secrets.</li>
+          <li>The <code>backups</code> folder, and the backup password if you set one.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+</div>
+<footer><span data-brand="product"></span> by <span data-brand="company"></span> · open source (AGPL) · this page works offline and sends nothing anywhere</footer>
+
+<dialog class="guide" id="guide" aria-labelledby="guideTitle">
+  <div class="g-head"><h2 id="guideTitle"></h2><button type="button" class="g-close" id="gClose" aria-label="Close">×</button></div>
+  <div class="g-fig">
+    <a id="gLink" target="_blank" rel="noopener" title="Open the picture full size"><img id="gImg" alt=""></a>
+    <div class="g-missing" id="gMissing" hidden></div>
+  </div>
+  <p class="g-text" id="gText"></p>
+  <div class="g-nav">
+    <button type="button" class="btn" id="gPrev">← Previous</button>
+    <span class="g-count" id="gCount"></span>
+    <button type="button" class="btn primary" id="gNext">Next →</button>
+  </div>
+  <div class="g-dots" id="gDots"></div>
+</dialog>
+
+<script>
+(() => {
+  'use strict';
+  // Names are placeholders until they are decided: change them here only.
+  const BRAND = { product: 'product_name', company: 'company_name', repo: 'https://github.com/company_name/product_name' };
+  const WEB_PATH = '/other_things/web/';                // where the app answers (docker/apache.conf)
+  const PING = 'assets/icons/favicon-32.png';           // a small picture the app serves: loading it = the app answers
+  const IMG_DIR = 'welcome-images/';                    // the pictures of the guides, next to this file
+
+  // The "Show me with pictures" guides. {redirect}, {appUrl}, {setupUrl} and {product} are filled in.
+  const GUIDES = {
+    docker: { title: 'Docker Desktop on Windows', slides: [
+      ['docker-01-installer.png', 'Run the Docker Desktop installer. Keep <strong>Use WSL 2</strong> ticked, then restart the computer.'],
+      ['docker-02-engine-running.png', 'Open Docker Desktop. Bottom left it must say <strong>Engine running</strong>.'],
+      ['docker-03-start-on-sign-in.png', '<strong>Settings</strong> (the gear, top right) → <strong>General</strong>: tick <strong>Start Docker Desktop when you sign in</strong>.'],
+      ['docker-04-open-terminal.png', 'In the app folder, right-click an empty spot → <strong>Open in Terminal</strong>. Commands run there are in the right folder.'],
+    ] },
+    ms: { title: 'Register the app with Microsoft', slides: [
+      ['ms-01-new-registration.png', 'In the <strong>Microsoft Entra admin center</strong> open <strong>App registrations</strong> and press <strong>New registration</strong>.'],
+      ['ms-02-register-form.png', 'Type a name, choose <strong>Multitenant</strong>, set the Redirect URI platform to <strong>Web</strong> and paste <code>{redirect}</code>. Press <strong>Register</strong>.'],
+      ['ms-03-client-id.png', 'On the <strong>Overview</strong> page copy the <strong>Application (client) ID</strong> into the first field of step 4.'],
+      ['ms-04-new-secret.png', '<strong>Certificates &amp; secrets → Client secrets → New client secret</strong>, choose 24 months and press <strong>Add</strong>.'],
+      ['ms-05-secret-value.png', 'Copy the <strong>Value</strong> column at once, <em>not</em> the Secret ID. Microsoft never shows it again.'],
+      ['ms-06-add-permissions.png', '<strong>API permissions → Add a permission → Microsoft Graph → Delegated permissions</strong>. Search and tick each permission listed in step 4, then <strong>Add permissions</strong>.'],
+      ['ms-07-grant-consent.png', 'Press <strong>Grant admin consent for …</strong> and <strong>Yes</strong>. Every permission now shows a green tick.'],
+    ] },
+    google: { title: 'Register the app with Google', slides: [
+      ['g-01-new-project.png', 'In the <strong>Google Cloud console</strong>: the project list at the top → <strong>New project</strong>, give it a name and create it.'],
+      ['g-02-gmail-api.png', '<strong>APIs &amp; Services → Library</strong>, search <strong>Gmail API</strong> and press <strong>Enable</strong>.'],
+      ['g-03-audience-internal.png', '<strong>Google Auth Platform</strong>: fill in the app name and support email under <strong>Branding</strong>, and choose <strong>Internal</strong> under <strong>Audience</strong>.'],
+      ['g-04-scopes.png', '<strong>Data access → Add or remove scopes</strong>: tick the five scopes listed in step 4 and save.'],
+      ['g-05-create-client.png', '<strong>Clients → Create client</strong>, type <strong>Web application</strong>, and under Authorized redirect URIs add <code>{redirect}</code>.'],
+      ['g-06-client-secret.png', 'Copy the <strong>Client ID</strong> and the <strong>Client secret</strong> into the fields of step 4.'],
+    ] },
+    cert: { title: 'Trust the certificate on Windows', slides: [
+      ['cert-01-install.png', 'Double-click <strong>caddy-root.crt</strong> and press <strong>Install Certificate…</strong>.'],
+      ['cert-02-local-machine.png', 'Choose <strong>Local Machine</strong> and press Next. Windows asks for permission: <strong>Yes</strong>.'],
+      ['cert-03-trusted-root.png', '<strong>Place all certificates in the following store → Browse → Trusted Root Certification Authorities</strong>, then Next and <strong>Finish</strong>.'],
+      ['cert-04-secure.png', 'Close the browser and open {appUrl}: a padlock, no "Not secure" warning.'],
+    ] },
+    certMac: { title: 'Trust the certificate on a Mac', slides: [
+      ['cert-mac-01-keychain.png', 'Double-click <strong>caddy-root.crt</strong>: it opens in <strong>Keychain Access</strong>. Add it to the <strong>System</strong> keychain.'],
+      ['cert-mac-02-always-trust.png', 'Double-click the certificate → <strong>Trust</strong> → <strong>When using this certificate: Always Trust</strong>. Close the window and type your Mac password.'],
+    ] },
+    connect: { title: 'Connect your mailbox', slides: [
+      ['app-01-connect.png', 'In the app: <strong>Settings → Mailbox → Connect</strong>, then Microsoft or Google.'],
+      ['app-02-consent.png', 'Sign in with your work account and accept. An administrator can tick <strong>Consent on behalf of your organization</strong>, so colleagues are not asked.'],
+      ['app-03-mail-arriving.png', 'Back in the app the folders appear and fill in by themselves. New mail arrives within a minute.'],
+    ] },
+  };
+
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const store = {
+    get(k) { try { return JSON.parse(localStorage.getItem('welcome.' + k)); } catch (_) { return null; } },
+    set(k, v) { try { localStorage.setItem('welcome.' + k, JSON.stringify(v)); } catch (_) {} },
+  };
+
+  $$('[data-brand]').forEach((el) => { el.textContent = BRAND[el.dataset.brand] || ''; });
+  document.title = 'Welcome to ' + BRAND.product + ' — setup guide';
+  // The camera icon on every pictures button.
+  $$('.btn.photos').forEach((b) => b.insertAdjacentHTML('afterbegin', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h3l2-3h6l2 3h3a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="4"/></svg>'));
+
+  // ------------------------------------------------------------ state
+  const DEFAULTS = { os: /Win/.test(navigator.platform) ? 'windows' : /Mac/.test(navigator.platform) ? 'mac' : 'linux', mode: 'local',
+    host: '', httpPort: 8080, httpsPort: 8443, msId: '', msSecret: '', msPersonal: false, gId: '', gSecret: '',
+    backups: true, keep: 14, offsite: '', backupPw: '', dbMem: '', push: '', ai: '', aiDaily: 20,
+    folder: '',         // where the app folder is (only for the commands, not in the .env)
+    existing: false,    // the fields came from a loaded .env (whose passwords are only in memory)
+    envSaved: false };  // the .env was downloaded or copied since the last change
+  const SECRET = new Set(['msSecret', 'gSecret', 'backupPw', 'ai']);   // never kept in the browser
+  const state = Object.assign({}, DEFAULTS, store.get('state') || {});
+  let loadedEnv = null;   // lines of a loaded .env, kept as they are except the keys this page writes
+
+  const save = () => { const s = {}; for (const k in state) if (!SECRET.has(k)) s[k] = state[k]; store.set('state', s); };
+
+  // ------------------------------------------------------------ derived values
+  const port = (v, d) => { const n = parseInt(v, 10); return n >= 1 && n <= 65535 ? n : d; };
+  const LOCALHOST = /^(localhost|127\.)/i;
+  function derived() {
+    const httpPort = port(state.httpPort, 8080), httpsPort = port(state.httpsPort, 8443);
+    const server = state.mode === 'server';
+    const host = state.host.trim().replace(/^https?:\/\//i, '').replace(/[:/].*$/, '');
+    const base = server ? 'https://' + (host || 'SERVER') + (httpsPort === 443 ? '' : ':' + httpsPort) : 'http://localhost' + (httpPort === 80 ? '' : ':' + httpPort);
+    const local = 'http://localhost' + (httpPort === 80 ? '' : ':' + httpPort);
+    return { httpPort, httpsPort, server, host, base, local, appUrl: base + WEB_PATH, redirect: base + WEB_PATH + 'oauth/callback.php',
+             setupUrl: local + WEB_PATH + 'setup.php' };
+  }
+
+  // ------------------------------------------------------------ the .env file
+  // Compose reads single quotes literally; double quotes interpolate $, so $ is doubled there.
+  function quote(v) {
+    v = String(v);
+    if (v === '' || /^[A-Za-z0-9_.:\/@+=,-]+$/.test(v)) return v;
+    if (!v.includes("'")) return "'" + v + "'";
+    return '"' + v.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\$/g, '$$$$') + '"';
+  }
+  function unquote(v) {
+    v = v.trim();
+    if (v.length >= 2 && v[0] === "'" && v.endsWith("'")) return v.slice(1, -1);
+    if (v.length >= 2 && v[0] === '"' && v.endsWith('"')) return v.slice(1, -1).replace(/\$\$/g, '$').replace(/\\(["\\])/g, '$1');
+    return v.replace(/\s+#.*$/, '');
+  }
+  function parseEnv(text) {
+    const values = {};
+    for (const line of text.split(/\r?\n/)) {
+      const m = line.match(/^\s*([A-Z0-9_]+)\s*=(.*)$/);
+      if (m) values[m[1]] = unquote(m[2]);
+    }
+    return values;
+  }
+  const kept = (k) => (loadedEnv && loadedEnv.values[k]) || '';
+
+  /** [key, value, comment, optional]: optional keys are left out while empty. */
+  function envEntries(d) {
+    return [
+      ['ECW_DB_PASSWORD', kept('ECW_DB_PASSWORD'), 'Passwords: empty ones are generated by the start script the first time.'],
+      ['ECW_DB_ROOT_PASSWORD', kept('ECW_DB_ROOT_PASSWORD')],
+      ['ECW_SETUP_TOKEN', kept('ECW_SETUP_TOKEN')],
+      ['ECW_HTTP_PORT', String(d.httpPort), 'Where it runs (welcome.html). 0.0.0.0 = every device on the network.'],
+      ['ECW_BIND_ADDRESS', d.server ? '0.0.0.0' : '127.0.0.1'],
+      ['ECW_BASE_URL', d.base],
+      ['ECW_HTTPS_PORT', String(d.httpsPort)],
+      ['ECW_HTTPS_HOSTS', d.server && d.host ? 'localhost, ' + d.host : 'localhost'],
+      ['ECW_PROXY_SECRET', kept('ECW_PROXY_SECRET')],
+      ['ECW_GRAPH_CLIENT_ID', state.msId.trim(), 'Microsoft 365 / Outlook.'],
+      ['ECW_GRAPH_CLIENT_SECRET', state.msSecret.trim() || (state.msId.trim() ? kept('ECW_GRAPH_CLIENT_SECRET') : '')],
+      ['ECW_GRAPH_REDIRECT_URI', d.redirect],
+      ['ECW_GRAPH_PERSONAL_ACCOUNTS', state.msPersonal ? '1' : '0'],
+      ['ECW_GOOGLE_CLIENT_ID', state.gId.trim(), 'Google Workspace.'],
+      ['ECW_GOOGLE_CLIENT_SECRET', state.gSecret.trim() || (state.gId.trim() ? kept('ECW_GOOGLE_CLIENT_SECRET') : '')],
+      ['ECW_GOOGLE_REDIRECT_URI', d.redirect],
+      ['ECW_BACKUPS', state.backups ? '1' : '0', 'Backups.'],
+      ['ECW_BACKUP_KEEP', String(Math.max(1, parseInt(state.keep, 10) || 14))],
+      ['ECW_OFFSITE_DIR', state.offsite.trim(), null, true],
+      ['ECW_BACKUP_PASSWORD', state.backupPw || kept('ECW_BACKUP_PASSWORD'), null, true],
+      ['ECW_DB_MEMORY', state.dbMem, 'Performance and extras.', true],
+      ['ECW_PUSH_CONTACT', state.push.trim(), null, true],
+      ['ECW_CLAUDE_API_KEY', state.ai.trim() || kept('ECW_CLAUDE_API_KEY'), null, true],
+      ['ECW_AI_DAILY_REQUESTS', String(Math.max(1, parseInt(state.aiDaily, 10) || 20))],
+    ];
+  }
+
+  function buildEnv() {
+    const d = derived();
+    const entries = envEntries(d);
+    if (loadedEnv) {
+      // The loaded file, line by line: our keys get their new value, everything else stays.
+      const mine = new Map(entries.map((e) => [e[0], e]));
+      const written = new Set();
+      const out = loadedEnv.lines.map((line) => {
+        const m = line.match(/^\s*([A-Z0-9_]+)\s*=/);
+        if (!m || !mine.has(m[1])) return line;
+        const [key, value, , optional] = mine.get(m[1]);
+        written.add(key);
+        return optional && value === '' ? '# ' + key + '=' : key + '=' + quote(value);
+      });
+      const missing = entries.filter((e) => !written.has(e[0]) && !(e[3] && e[1] === ''));
+      if (missing.length) out.push('', '# Added by welcome.html', ...missing.map(([k, v]) => k + '=' + quote(v)));
+      return out.join('\n').replace(/\n{3,}/g, '\n\n').trimEnd() + '\n';
+    }
+    const out = ['# Settings of ' + BRAND.product + ', made with welcome.html. Keep this file private.'];
+    for (const [key, value, comment, optional] of entries) {
+      if (comment) out.push('', '# ' + comment);
+      if (optional && value === '') continue;
+      out.push(key + '=' + quote(value));
+    }
+    return out.join('\n') + '\n';
+  }
+
+  // ------------------------------------------------------------ commands per system
+  const sudo = () => (state.os === 'linux' ? 'sudo ' : '');
+  /** Says per port "free" or the next free one. Windows also counts the ranges it keeps for Hyper-V / WSL as busy. */
+  function portCheck(ports) {
+    if (state.os === 'windows') {
+      return '$reserved = netsh int ipv4 show excludedportrange protocol=tcp | ForEach-Object { if ($_ -match \'^\\s*(\\d+)\\s+(\\d+)\') { [pscustomobject]@{ From = [int]$Matches[1]; To = [int]$Matches[2] } } }\n'
+        + 'function Test-Busy($p) { [bool](Get-NetTCPConnection -State Listen -LocalPort $p -ErrorAction SilentlyContinue) -or [bool]($reserved | Where-Object { $p -ge $_.From -and $p -le $_.To }) }\n'
+        + 'foreach ($p in ' + ports.join(', ') + ') { if (Test-Busy $p) { $f = ($p + 1)..($p + 100) | Where-Object { -not (Test-Busy $_) } | Select-Object -First 1; "Port $p is BUSY: use $f instead" } else { "Port $p is free" } }';
+    }
+    const busy = state.os === 'mac' ? 'lsof -nP -iTCP:$1 -sTCP:LISTEN >/dev/null 2>&1' : 'ss -ltn | grep -q ":$1 "';
+    return 'busy() { ' + busy + '; }\n'
+      + 'for p in ' + ports.join(' ') + '; do if busy $p; then f=$((p+1)); while busy $f; do f=$((f+1)); done; echo "Port $p is BUSY: use $f instead"; else echo "Port $p is free"; fi; done';
+  }
+  const exampleFolder = () => (state.os === 'windows' ? 'C:\\Apps\\' + BRAND.product : state.os === 'mac' ? '~/Apps/' + BRAND.product : '/opt/' + BRAND.product);
+  /** "cd <the app folder>": what was typed (Copy as path adds quotes: they are taken off), or the example. */
+  function cdLine() {
+    let f = state.folder.trim().replace(/^(["'])(.*)\1$/, '$2').trim() || exampleFolder();
+    if (/\s/.test(f)) f = f.startsWith('~/') ? '~/"' + f.slice(2) + '"' : '"' + f + '"';
+    return 'cd ' + f;
+  }
+  function commands(d) {
+    const win = state.os === 'windows', cd = cdLine() + '\n';
+    return {
+      ports: portCheck(d.server ? [d.httpPort, d.httpsPort] : [d.httpPort]),
+      clone: 'git clone ' + BRAND.repo + '.git',
+      folder: exampleFolder(),
+      cd: cdLine(),
+      // The setup code from .env: shown, and on Windows / Mac also put on the clipboard.
+      code: cd + (win
+        ? '$code = (Select-String -Path .env -Pattern \'^ECW_SETUP_TOKEN=(.*)$\').Matches[0].Groups[1].Value.Trim(\'"\', "\'")\n'
+          + '$code | Set-Clipboard; "Setup code (copied): $code"'
+        : state.os === 'mac'
+          ? 'code=$(sed -n \'s/^ECW_SETUP_TOKEN=//p\' .env | tr -d "\\"\' "); printf %s "$code" | pbcopy; echo "Setup code (copied): $code"'
+          : 'sudo sed -n \'s/^ECW_SETUP_TOKEN=//p\' .env | tr -d "\\"\'"'),
+      start: cd + (win ?'powershell -ExecutionPolicy Bypass -File .\\Start.ps1' : sudo() + 'sh start.sh'),
+      https: cd + (win
+        ? '.\\scripts\\https-setup.ps1 "localhost, ' + (d.host || 'SERVER') + '"\n'
+          + 'New-NetFirewallRule -DisplayName "' + BRAND.product + '" -Direction Inbound -Protocol TCP -LocalPort ' + d.httpsPort + ' -Action Allow'
+        : sudo() + 'sh scripts/https-setup.sh "localhost, ' + (d.host || 'SERVER') + '"' + (state.os === 'linux' ? '\nsudo ufw allow ' + d.httpsPort + '/tcp' : '')),
+      apply: cd + sudo() + 'docker compose up -d --wait --wait-timeout 240' + (d.server ? '\n' + sudo() + 'docker compose --profile https up -d' : ''),
+    };
+  }
+
+  // ------------------------------------------------------------ checks while typing
+  const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const GOOGLE_ID = /\.apps\.googleusercontent\.com$/;
+  function hint(id, text, bad, good) { const el = document.getElementById(id); if (!el) return; el.textContent = text; el.classList.toggle('bad', !!bad); el.classList.toggle('good', !!good); }
+  function validate(d) {
+    const id = state.msId.trim(), secret = state.msSecret.trim(), g = state.gId.trim(), gs = state.gSecret.trim();
+    hint('msIdHint', id === '' ? 'Overview page of the app registration.' : GUID.test(id) ? '✓ Looks right.' : 'This should look like xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.', id !== '' && !GUID.test(id), GUID.test(id));
+    hint('msSecretHint', secret === '' ? (kept('ECW_GRAPH_CLIENT_SECRET') ? 'Empty = keep the secret from the loaded .env.' : 'Shown only once, right after you create it.')
+      : GUID.test(secret) ? 'This is the Secret ID. Copy the Value column instead.' : secret === id ? 'This is the client ID again. Copy the secret Value.' : '✓ Looks right.',
+      GUID.test(secret) || (secret !== '' && secret === id), secret !== '' && !GUID.test(secret) && secret !== id);
+    hint('gIdHint', g === '' ? 'Shown when the client is created.' : GOOGLE_ID.test(g) ? '✓ Looks right.' : 'It ends with .apps.googleusercontent.com.', g !== '' && !GOOGLE_ID.test(g), GOOGLE_ID.test(g));
+    hint('gSecretHint', gs === '' ? (kept('ECW_GOOGLE_CLIENT_SECRET') ? 'Empty = keep the secret from the loaded .env.' : 'Starts with GOCSPX-') : '✓ Pasted.', false, gs !== '');
+    if (d.server) hint('hostHint', d.host === '' ? 'Needed: the IP address or name people on your network use to reach this computer.' : LOCALHOST.test(d.host) ? 'That only works on the server itself: use its network address.' : '✓ People will open ' + d.appUrl, d.host === '' || LOCALHOST.test(d.host), d.host !== '' && !LOCALHOST.test(d.host));
+  }
+
+  /** Why the .env cannot be saved right now, or ''. */
+  function envProblem() {
+    const d = derived();
+    if (d.server && (!d.host || LOCALHOST.test(d.host))) return 'Fill in the server address first (step "Where it runs").';
+    if (state.existing && !loadedEnv) return 'Load your .env again first (step "Where it runs"), so its passwords are kept.';
+    const msSecret = state.msSecret.trim();
+    if (state.msId.trim() && GUID.test(msSecret)) return 'The Microsoft secret is the Secret ID: paste the secret Value (step 4).';
+    if (state.msId.trim() && !msSecret && !kept('ECW_GRAPH_CLIENT_SECRET')) return 'Paste the Microsoft secret Value again (step 4): this page does not remember secrets after it is closed.';
+    if (state.gId.trim() && !state.gSecret.trim() && !kept('ECW_GOOGLE_CLIENT_SECRET')) return 'Paste the Google client secret again (step 4): this page does not remember secrets after it is closed.';
+    return '';
+  }
+
+  // ------------------------------------------------------------ the wizard
+  // Old versions of this page kept the ticked steps under "done": they count as ticked and finished.
+  const legacy = store.get('confirmed') ? null : store.get('done');
+  const confirmed = new Set(store.get('confirmed') || legacy || []);   // boxes ticked
+  const done = new Set(legacy || store.get('finished') || []);         // steps left with Next
+  let view = store.get('view') === 'settings' ? 'settings' : 'wizard';
+  let current = store.get('current') || 's-need';
+  const saveProgress = () => { store.set('confirmed', [...confirmed]); store.set('finished', [...done]); store.set('current', current); store.set('view', view); };
+
+  const wizardSteps = () => $$('.step[data-step]').filter((s) => !s.hidden);
+  const confirmBox = (id) => $('[data-confirm="' + id + '"]');
+
+  /** Why this step cannot be left with Next yet, or ''. strict = also what this page forgets when closed (secrets). */
+  function blocker(id, strict) {
+    const d = derived();
+    let r = '';
+    if (id === 's-where' && d.server && (!d.host || LOCALHOST.test(d.host))) r = 'Fill in the server address.';
+    if (id === 's-mail') {
+      const msId = GUID.test(state.msId.trim()), gId = GOOGLE_ID.test(state.gId.trim());
+      const s = state.msSecret.trim();
+      if (!msId && !gId) r = state.msId.trim() || state.gId.trim() ? 'The client ID does not look right yet.' : 'Paste the client ID you got from Microsoft (or Google).';
+      else if (strict) {
+        const msOk = msId && ((s && !GUID.test(s) && s !== state.msId.trim()) || (!s && kept('ECW_GRAPH_CLIENT_SECRET')));
+        const gOk = gId && (state.gSecret.trim() || kept('ECW_GOOGLE_CLIENT_SECRET'));
+        if (!msOk && !gOk) r = msId ? (GUID.test(s) ? 'That is the Secret ID: paste the secret Value.' : 'Paste the client secret Value.') : 'Paste the Google client secret.';
+      }
+    }
+    if (id === 's-env') r = (strict && envProblem()) || (!state.envSaved ? 'Download the .env (or copy it) first.' : '');
+    const box = confirmBox(id);
+    if (!r && box && !confirmed.has(id)) r = 'Tick “' + box.closest('label').textContent.trim() + '” when it is done.';
+    return r;
+  }
+
+  // A finished step stops counting as finished when what it needs is no longer true
+  // (box unticked, address emptied, settings changed after the .env was saved).
+  function revalidate() { for (const s of wizardSteps()) if (done.has(s.id) && blocker(s.id, false)) done.delete(s.id); }
+  const reachable = (steps, i) => steps.slice(0, i).every((s) => done.has(s.id));
+
+  function go(id) {
+    current = id; saveProgress(); render();
+    window.scrollTo({ top: document.querySelector('.wrap').offsetTop - 8, behavior: 'smooth' });
+  }
+
+  function renderWizard() {
+    revalidate();
+    const steps = wizardSteps();
+    const allDone = steps.every((s) => done.has(s.id));
+    let i = steps.findIndex((s) => s.id === current);
+    if (current === 's-finish' && !allDone) i = -1;
+    if (current !== 's-finish' && (i < 0 || !reachable(steps, i))) {
+      // Back to the first step that is not finished.
+      i = steps.findIndex((s) => !done.has(s.id));
+      current = i < 0 ? 's-finish' : steps[i].id;
+    }
+    if (current === 's-finish' && !allDone) { i = steps.findIndex((s) => !done.has(s.id)); current = steps[i].id; }
+    document.body.dataset.at = current;
+    $$('.step').forEach((s) => s.classList.toggle('active', s.id === current));
+    $$('.step').forEach((s) => s.classList.toggle('done', done.has(s.id)));
+
+    // Numbers, the list on the left, the progress.
+    const toc = $('#toc'); toc.innerHTML = '';
+    let minutes = 0;
+    steps.forEach((s, n) => {
+      $('.step-head .num', s).textContent = n + 1;
+      if (!done.has(s.id)) minutes += parseInt(s.dataset.min, 10) || 0;
+      const li = document.createElement('li');
+      const open = reachable(steps, n);
+      li.className = (s.id === current ? 'current ' : '') + (done.has(s.id) ? 'done' : open ? '' : 'locked');
+      li.innerHTML = '<button type="button" class="toc-item"><span class="num"><span></span></span><span class="t"></span></button>';
+      li.querySelector('.num span').textContent = n + 1;
+      li.querySelector('.t').textContent = s.dataset.title;
+      const b = li.querySelector('button');
+      if (open) b.addEventListener('click', () => go(s.id));
+      else { b.setAttribute('aria-disabled', 'true'); b.title = 'Finish the steps before this one first'; }
+      toc.appendChild(li);
+    });
+    const count = steps.filter((s) => done.has(s.id)).length;
+    $('#progressText').textContent = current === 's-finish' ? 'All ' + steps.length + ' steps done'
+      : 'Step ' + (steps.findIndex((s) => s.id === current) + 1) + ' of ' + steps.length + ' · about ' + Math.max(1, minutes) + ' min left';
+    $('#progressBar').style.width = (steps.length ? Math.round(count / steps.length * 100) : 0) + '%';
+
+    // Back / Next on the slide that is open.
+    const slide = $('#' + current);
+    if (current !== 's-finish') {
+      const nav = $('.slide-nav', slide);
+      const pos = steps.indexOf(slide);
+      const why = blocker(current, true);
+      nav.querySelector('.back').hidden = pos === 0;
+      const next = nav.querySelector('.next');
+      next.disabled = !!why;
+      next.textContent = pos === steps.length - 1 ? 'Finish ✓' : 'Next →';
+      nav.querySelector('.reason').textContent = why;
+    }
+    managePolling();
+  }
+
+  // Back and Next on every step.
+  $$('.step[data-step]').forEach((s) => {
+    const nav = document.createElement('div');
+    nav.className = 'slide-nav';
+    nav.innerHTML = '<button type="button" class="btn back">← Back</button><span class="reason" aria-live="polite"></span><button type="button" class="btn primary next">Next →</button>';
+    nav.querySelector('.back').addEventListener('click', () => {
+      const steps = wizardSteps(), i = steps.indexOf(s);
+      if (i > 0) go(steps[i - 1].id);
+    });
+    nav.querySelector('.next').addEventListener('click', () => {
+      if (blocker(s.id, true)) { render(); return; }
+      done.add(s.id);
+      const steps = wizardSteps(), i = steps.indexOf(s);
+      go(i < steps.length - 1 ? steps[i + 1].id : 's-finish');
+    });
+    $('.step-body', s).appendChild(nav);
+  });
+  $('#reviewSteps').addEventListener('click', () => go(wizardSteps()[0].id));
+
+  // ------------------------------------------------------------ the page's own checks
+  // Loading a small picture from the app works even from a page opened as a file:
+  // it loads = the app answers there (and, for https, this computer trusts its certificate).
+  function ping(url) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      const timer = setTimeout(() => { img.src = ''; resolve(false); }, 5000);
+      img.onload = () => { clearTimeout(timer); resolve(true); };
+      img.onerror = () => { clearTimeout(timer); resolve(false); };
+      img.src = url + '?t=' + Date.now();
+    });
+  }
+  function setCheck(id, kind, text) { const el = document.getElementById(id); el.className = 'autocheck ' + kind; el.textContent = text; }
+  let pollFor = null, pollTimer = null;
+  function managePolling() {
+    const want = view !== 'wizard' ? null
+      : current === 's-start' && !confirmed.has('s-start') ? 's-start'
+      : current === 's-https' ? 's-https' : null;
+    if (want === pollFor) return;
+    clearTimeout(pollTimer); pollFor = want;
+    if (want === 's-start') setCheck('startCheck', 'wait', 'Waiting for the app to start…');
+    if (want === 's-https') setCheck('httpsCheck', 'wait', 'Checking the secure address from this computer…');
+    if (want) poll();
+  }
+  async function poll() {
+    const target = pollFor, d = derived();
+    if (target === 's-start') {
+      const urls = [d.local + WEB_PATH + PING];
+      if (d.server && d.host && !LOCALHOST.test(d.host)) urls.push('http://' + d.host + ':' + d.httpPort + WEB_PATH + PING);
+      const ok = (await Promise.all(urls.map(ping))).some(Boolean);
+      if (pollFor !== target) return;
+      if (ok) {
+        setCheck('startCheck', 'ok', 'The app is running. Press Next.');
+        confirmed.add('s-start'); saveProgress(); pollFor = null; render(); return;
+      }
+      setCheck('startCheck', 'wait', 'Waiting for the app to answer at ' + d.local + ' … this page checks again by itself every few seconds.');
+    } else if (target === 's-https') {
+      const ok = await ping(d.base + WEB_PATH + PING);
+      if (pollFor !== target) return;
+      setCheck('httpsCheck', ok ? 'ok' : 'bad', ok
+        ? 'This computer opens ' + d.base + ' securely. Now check it from one other computer too.'
+        : 'This computer cannot open ' + d.base + ' securely yet: run the command above, and install caddy-root.crt on this computer too.');
+    }
+    if (pollFor === target) pollTimer = setTimeout(poll, 4000);
+  }
+
+  // ------------------------------------------------------------ the pictures window
+  const dlg = $('#guide');
+  let guideKey = null, guideIdx = 0;
+  function fill(html) {
+    const d = derived(), v = { redirect: d.redirect, appUrl: d.appUrl, setupUrl: d.setupUrl, product: BRAND.product };
+    return html.replace(/\{(\w+)\}/g, (m, k) => (k in v ? esc(v[k]) : m));
+  }
+  function showGuide() {
+    const g = GUIDES[guideKey], [file, text] = g.slides[guideIdx], src = IMG_DIR + file;
+    $('#guideTitle').textContent = g.title;
+    const img = $('#gImg'), missing = $('#gMissing');
+    img.hidden = false; missing.hidden = true;
+    img.onerror = () => {
+      img.hidden = true; missing.hidden = false;
+      missing.innerHTML = 'Picture not added yet.<br>Put it here: <code></code>';
+      missing.querySelector('code').textContent = src;
+    };
+    img.src = src;
+    $('#gLink').href = src;
+    $('#gText').innerHTML = fill(text);
+    img.alt = $('#gText').textContent;
+    $('#gCount').textContent = (guideIdx + 1) + ' of ' + g.slides.length;
+    $('#gPrev').disabled = guideIdx === 0;
+    $('#gNext').textContent = guideIdx === g.slides.length - 1 ? 'Done' : 'Next →';
+    $('#gDots').innerHTML = g.slides.map((_, n) => '<span' + (n === guideIdx ? ' class="on"' : '') + '></span>').join('');
+  }
+  function openGuide(key) {
+    guideKey = key; guideIdx = 0; showGuide();
+    if (typeof dlg.showModal === 'function') { if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', '');
+  }
+  const closeGuide = () => { if (dlg.open) dlg.close ? dlg.close() : dlg.removeAttribute('open'); };
+  $$('[data-guide]').forEach((b) => b.addEventListener('click', () => openGuide(b.dataset.guide)));
+  $('#gPrev').addEventListener('click', () => { if (guideIdx > 0) { guideIdx--; showGuide(); } });
+  $('#gNext').addEventListener('click', () => { if (guideIdx < GUIDES[guideKey].slides.length - 1) { guideIdx++; showGuide(); } else closeGuide(); });
+  $('#gClose').addEventListener('click', closeGuide);
+  dlg.addEventListener('click', (e) => { if (e.target === dlg) closeGuide(); });   // a click on the dark backdrop
+  dlg.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') $('#gNext').click();
+    if (e.key === 'ArrowLeft' && guideIdx > 0) $('#gPrev').click();
+  });
+
+  // ------------------------------------------------------------ render
+  function render() {
+    const d = derived(), c = commands(d);
+    document.documentElement.dataset.os = state.os;
+    document.body.dataset.view = view;
+    $('#heroSettings').hidden = view === 'settings';
+    $('#heroWizard').hidden = view !== 'settings';
+    $$('[data-choice]').forEach((seg) => $$('button', seg).forEach((b) => b.setAttribute('aria-pressed', String(state[seg.dataset.choice] === b.dataset.v))));
+    $$('[data-os]').forEach((el) => { el.hidden = !el.dataset.os.split(',').includes(state.os); });
+    $$('[data-mode]').forEach((el) => { el.hidden = el.dataset.mode !== state.mode; });
+    $$('[data-out]').forEach((el) => { el.textContent = d[el.dataset.out]; });
+    $$('[data-out-href]').forEach((el) => { el.href = d[el.dataset.outHref]; });
+    $('#cloneCmd').textContent = c.clone;
+    $('#folderHint').textContent = c.folder;
+    $('#f-folder').placeholder = c.folder;
+    $('#portCmd').textContent = c.ports;
+    $('#startCmd').textContent = c.start;
+    $('#codeCmd').textContent = c.code;
+    $('#httpsCmd').textContent = c.https;
+    $('#applyCmd').textContent = c.apply;
+    const p = sudo();
+    $('#dailyCmds').innerHTML = '';
+    [['Go to the app folder', c.cd, true], ['Is it running?', 'docker compose ps'], ['Stop', 'docker compose stop'], ['Start again', 'docker compose up -d'], ['Recent problems', 'docker compose logs --tail=100 web sync']]
+      .forEach(([what, cmd, plain]) => { const tr = document.createElement('tr'); tr.innerHTML = '<td></td><td><code></code></td>'; tr.cells[0].textContent = what; tr.querySelector('code').textContent = (plain ? '' : p) + cmd; $('#dailyCmds').appendChild(tr); });
+    $$('code.sudo').forEach((el) => { el.textContent = p + el.textContent.replace(/^sudo /, ''); });
+    $('#envOut').value = buildEnv();
+    // Settings of an existing installation, reopened without its .env: saving now would lose its passwords.
+    const mustReload = state.existing && !loadedEnv;
+    $('#reloadNote').hidden = !mustReload;
+    $('#envOut').style.opacity = mustReload ? '.45' : '';
+    const pw = $('#envPasswordsNote');
+    pw.innerHTML = loadedEnv && loadedEnv.values.ECW_DB_PASSWORD
+      ? '<strong>Passwords kept.</strong> The database passwords and setup code from your loaded <code>.env</code> are in the file unchanged: changing them would lock the app out of its own database.'
+      : '<strong>The passwords are empty on purpose.</strong> The start script (step 7) fills in strong random ones the first time. Do not change them afterwards.';
+    $$('[data-confirm]').forEach((cb) => { cb.checked = confirmed.has(cb.dataset.confirm); });
+    validate(d);
+    if (view === 'wizard') renderWizard(); else managePolling();
+  }
+
+  // ------------------------------------------------------------ wiring
+  function fillFields() {
+    $$('[data-key]').forEach((el) => {
+      const k = el.dataset.key;
+      if (el.type === 'checkbox') el.checked = !!state[k]; else el.value = state[k] ?? '';
+    });
+  }
+  $$('[data-key]').forEach((el) => el.addEventListener(el.type === 'checkbox' || el.tagName === 'SELECT' ? 'change' : 'input', () => {
+    const k = el.dataset.key;
+    state[k] = el.type === 'checkbox' ? el.checked : el.value;
+    if (k !== 'folder') state.envSaved = false;   // the saved .env no longer matches (the folder is not in it)
+    save(); render();
+  }));
+  $$('[data-choice]').forEach((seg) => seg.addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b || state[seg.dataset.choice] === b.dataset.v) return;
+    state[seg.dataset.choice] = b.dataset.v;
+    if (seg.dataset.choice === 'mode') state.envSaved = false;
+    save(); render();
+  }));
+  document.addEventListener('change', (e) => {
+    const cb = e.target.closest('[data-confirm]'); if (!cb) return;
+    const id = cb.dataset.confirm;
+    if (cb.checked) confirmed.add(id); else { confirmed.delete(id); done.delete(id); }
+    saveProgress(); render();
+  });
+  $$('.tabs [role=tab]').forEach((t) => t.addEventListener('click', () => {
+    $$('.tabs [role=tab]').forEach((x) => x.setAttribute('aria-selected', String(x === t)));
+    $$('.tabpanel').forEach((p) => { p.hidden = p.dataset.panel !== t.dataset.tab; });
+  }));
+  $$('[data-view-go]').forEach((b) => b.addEventListener('click', () => {
+    view = b.dataset.viewGo; saveProgress(); render(); window.scrollTo({ top: 0 });
+  }));
+
+  async function copyText(text, button) {
+    try { await navigator.clipboard.writeText(text); }
+    catch (_) { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }
+    if (button) { const was = button.textContent; button.textContent = 'Copied'; setTimeout(() => { button.textContent = was; }, 1400); }
+  }
+  // A Copy button on every command block.
+  $$('.cmd').forEach((box) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'copy'; b.textContent = 'Copy'; b.addEventListener('click', () => copyText($('pre', box).textContent, b)); box.appendChild(b); });
+  $$('[data-copy-out]').forEach((b) => b.addEventListener('click', () => copyText(derived()[b.dataset.copyOut], b)));
+
+  $('#newInstall').addEventListener('click', () => { state.existing = false; save(); render(); });
+  function envSaved(message) { state.envSaved = true; save(); $('#envStatus').textContent = message; render(); }
+  $('#copyEnv').addEventListener('click', async (e) => {
+    const problem = envProblem(); if (problem) { $('#envStatus').textContent = problem; return; }
+    await copyText($('#envOut').value, e.currentTarget);
+    envSaved('Copied. Paste it into a file named .env in the app folder.');
+  });
+  $('#downloadEnv').addEventListener('click', () => {
+    const problem = envProblem(); if (problem) { $('#envStatus').textContent = problem; return; }
+    const url = URL.createObjectURL(new Blob([$('#envOut').value], { type: 'text/plain' }));
+    const a = document.createElement('a'); a.href = url; a.download = '.env'; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    envSaved('Downloaded. Move it into the app folder, named .env.');
+  });
+
+  // Load an existing .env: fill the fields, keep the rest of the file.
+  $('#envFile').addEventListener('change', async (e) => {
+    const file = e.target.files && e.target.files[0]; if (!file) return;
+    const text = await file.text();
+    const v = parseEnv(text);
+    if (!Object.keys(v).some((k) => k.startsWith('ECW_'))) { $('#loadStatus').textContent = 'That does not look like this app\'s .env file.'; return; }
+    loadedEnv = { lines: text.replace(/\r\n/g, '\n').replace(/\n+$/, '').split('\n'), values: v };
+    let base = null; try { base = new URL(v.ECW_BASE_URL || ''); } catch (_) {}
+    Object.assign(state, {
+      mode: v.ECW_BIND_ADDRESS === '0.0.0.0' ? 'server' : 'local',
+      host: base && !LOCALHOST.test(base.hostname) ? base.hostname : state.host,
+      httpPort: v.ECW_HTTP_PORT || 8080, httpsPort: v.ECW_HTTPS_PORT || 8443,
+      msId: v.ECW_GRAPH_CLIENT_ID || '', msSecret: '', msPersonal: v.ECW_GRAPH_PERSONAL_ACCOUNTS === '1',
+      gId: v.ECW_GOOGLE_CLIENT_ID || '', gSecret: '',
+      backups: v.ECW_BACKUPS !== '0', keep: v.ECW_BACKUP_KEEP || 14, offsite: v.ECW_OFFSITE_DIR || '', backupPw: '',
+      dbMem: v.ECW_DB_MEMORY || '', push: v.ECW_PUSH_CONTACT || '', ai: '', aiDaily: v.ECW_AI_DAILY_REQUESTS || 20,
+      existing: !!v.ECW_DB_PASSWORD, envSaved: false,
+    });
+    // Secrets are not shown again: an empty secret field keeps the loaded value.
+    $$('[data-secret]').forEach((el) => { el.placeholder = 'Saved in your .env: leave empty to keep it'; });
+    fillFields(); save(); render();
+    $('#loadStatus').textContent = 'Loaded ' + file.name + '. Its passwords and secrets are kept; change what you need below.';
+    e.target.value = '';
+  });
+
+  // Light / dark, remembered.
+  const theme = store.get('theme'); if (theme) document.documentElement.dataset.theme = theme;
+  $('#themeBtn').addEventListener('click', () => {
+    const dark = document.documentElement.dataset.theme ? document.documentElement.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.dataset.theme = dark ? 'light' : 'dark'; store.set('theme', document.documentElement.dataset.theme);
+  });
+
+  fillFields();
+  render();
+  saveProgress();
+})();
+</script>
+</body>
+</html>

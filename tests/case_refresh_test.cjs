@@ -1,0 +1,20 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const pending=[],ids=new Map();
+const document={body:{dataset:{}},querySelectorAll:()=>[],getElementById:id=>{if(!ids.has(id))ids.set(id,{scrollTop:75,hidden:false,dataset:{},style:{},addEventListener(){},removeEventListener(){},setAttribute(){},removeAttribute(){},querySelector:()=>null,querySelectorAll:()=>[],getBoundingClientRect:()=>({top:0,bottom:0,height:0}),classList:{add(){},remove(){},toggle(){},contains:()=>false}});return ids.get(id);}};
+const window={location:{href:'https://example.test/other_things/web/case.php'},addEventListener(){},matchMedia:()=>({matches:false})};
+let source=fs.readFileSync(__dirname+'/../web/assets/case.js','utf8');
+source=source.replace('  wire();\n  load().then(loadOwners);','  globalThis.test={load,state,utc};');
+for(const line of ['renderSummary(data.summary);','renderColumnToggles(data.columns);','renderThreadPicker(data.columns);'])source=source.replace(line,'');
+source=source.replace('      renderTimeline(data);','      globalThis.renders.push(data);');
+const ctx=require('./support/vm_page.cjs').page({window,document,URL,console,renders:[],fetch:()=>new Promise(resolve=>pending.push(resolve))});vm.createContext(ctx);vm.runInContext(source,ctx);
+const reply=data=>({ok:true,text:async()=>JSON.stringify(data)});
+const data=name=>({summary:{name,timezone:'Europe/Athens'},columns:[],events:[],truncated:false});
+(async()=>{
+const first=ctx.test.load(),second=ctx.test.load();
+pending[1](reply(data('latest')));await second;pending[0](reply(data('stale')));await first;
+assert.equal(ctx.test.state.summary.name,'latest');assert.equal(ctx.renders.length,1);assert.equal(ids.get('timelineScroll').scrollTop,75);
+const third=ctx.test.load();pending[2](reply(data('latest')));await third;assert.equal(ctx.renders.length,1,'unchanged refresh does not rebuild bubbles');
+assert.equal(ctx.test.utc('2026-09-19 18:01:23').toISOString(),'2026-09-19T18:01:23.000Z');
+assert.equal(ctx.test.utc('2026-09-19T21:01:23+03:00').toISOString(),'2026-09-19T18:01:23.000Z');assert.equal(ctx.test.utc(null),null);
+console.log('PASS stale response protection, unchanged refresh, scroll position and timezone parsing');
+})().catch(e=>{console.error(e);process.exitCode=1;});

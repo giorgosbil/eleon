@@ -1,0 +1,32 @@
+# Encryption at rest for the database (optional). The MySQL data files, redo
+# and undo logs and binary logs are encrypted with a key kept in a SEPARATE
+# volume (db_keyring), so a copy of the database volume, a stolen disk image or
+# a lost server backup is unreadable on its own.
+#
+# Turn it on (once):   scripts/encrypt-at-rest.ps1   (or .sh)
+# It then runs with:   docker compose -f compose.yaml -f compose.encryption.yaml up -d
+#
+# KEEP THE KEY. Without the db_keyring volume the database cannot be opened.
+# The app's own backups (Settings -> Backups) are SQL, not data files, so they
+# restore without it; encrypt those with a backup password (Settings -> Security).
+services:
+  db:
+    entrypoint:
+      - sh
+      - -c
+      - mkdir -p /var/lib/mysql-keyring && touch /var/lib/mysql-keyring/component_keyring_file && chown -R mysql:mysql /var/lib/mysql-keyring && chmod 700 /var/lib/mysql-keyring && chmod 600 /var/lib/mysql-keyring/component_keyring_file && exec docker-entrypoint.sh "$$@"
+      - --
+    command:
+      - mysqld
+      - --innodb-buffer-pool-size=${ECW_DB_MEMORY:-512M}   # as in compose.yaml
+      - --default-table-encryption=ON
+      - --innodb-redo-log-encrypt=ON
+      - --innodb-undo-log-encrypt=ON
+      - --binlog-encryption=ON
+    volumes:
+      - database:/var/lib/mysql
+      - db_keyring:/var/lib/mysql-keyring
+      - ./docker/mysql-encryption/mysqld.my:/usr/sbin/mysqld.my:ro
+      - ./docker/mysql-encryption/component_keyring_file.cnf:/usr/lib64/mysql/plugin/component_keyring_file.cnf:ro
+volumes:
+  db_keyring:

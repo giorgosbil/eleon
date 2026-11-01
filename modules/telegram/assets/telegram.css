@@ -1,0 +1,34 @@
+/* Telegram module: the Telegram tab (connecting and the chats). Uses the chat layout of teams.css. */
+.tg-blue, .fa-telegram { color:#229ed9; }
+.tg-page[hidden], .tg-setup[hidden], .tg-setup .teams-card[hidden], .tg-setup [hidden], .tg-compose[hidden], .tg-attached[hidden] { display:none !important; }
+.tg-new-btn { white-space:nowrap; }
+.tg-me { display:flex; gap:6px; align-items:center; margin:0; padding:8px 12px; border-top:1px solid var(--border); font-size:12px; }
+.tg-me span { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.tg-link-btn { border:0; background:none; padding:0; color:var(--accent, #2563eb); font:inherit; font-size:12px; cursor:pointer; text-decoration:underline; }
+.tg-head-text { flex:1; min-width:0; display:flex; flex-direction:column; }
+.tg-head-text h2 { margin:0; font-size:16px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.tg-head-text .muted { font-size:12px; }
+.tg-case-chip { max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding:4px 10px; border-radius:999px; background:var(--accent-soft); color:var(--text); font-size:13px; text-decoration:none; }
+.tg-list { background:color-mix(in srgb, #229ed9 5%, var(--bg-alt)); }
+.tg-day { margin:12px auto 6px; width:max-content; padding:2px 10px; border-radius:6px; background:var(--bg); border:1px solid var(--border); font-size:11px; color:var(--muted); }
+.tg-msg.mine .teams-msg-bubble { background:color-mix(in srgb, #229ed9 20%, var(--bg)); border-color:color-mix(in srgb, #229ed9 35%, var(--bg)); color:var(--text); }
+.tg-text { white-space:pre-wrap; overflow-wrap:anywhere; }
+.tg-img { display:block; max-width:280px; max-height:320px; border-radius:6px; margin-bottom:4px; }
+.tg-msg audio { max-width:260px; }
+.tg-tick { letter-spacing:-2px; }
+.tg-tick.tg-read { color:#229ed9; }
+.tg-tick.tg-failed { color:#b42318; letter-spacing:0; }
+.tg-fail { margin-top:4px; font-size:12px; color:#b42318; }
+.tg-compose { border-top:1px solid var(--border); background:var(--bg); }
+.tg-compose .teams-compose { border-top:0; align-items:flex-end; }
+.tg-compose .tg-send { background:#229ed9; }
+.tg-attach { cursor:pointer; background:none; color:var(--muted); }
+.tg-attached { padding:6px 14px 0; font-size:12px; }
+#tgCaseResults, #tgNewResults { max-height:300px; }
+#tgCaseResults li, #tgNewResults li { cursor:pointer; }
+#tgNewNumberBox { margin-top:10px; }
+#tgNewNumberBox summary { cursor:pointer; font-size:13px; }
+#tgNewNumberBox input { width:100%; box-sizing:border-box; }
+.tg-setup label { display:block; margin:12px 0 4px; font-weight:600; font-size:13px; }
+.tg-setup input[type=text], .tg-setup input[type=password], .tg-setup input[type=tel] { width:100%; max-width:420px; box-sizing:border-box; padding:8px 10px; border:1px solid var(--border); border-radius:8px; font:inherit; background:var(--bg); color:var(--text); }
+.tg-setup + .tg-page { border-top:1px solid var(--border); }

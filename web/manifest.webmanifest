@@ -1,0 +1,24 @@
+{
+  "name": "Case Workspace",
+  "short_name": "Cases",
+  "description": "Team email, cases and calendar.",
+  "start_url": "app.php?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["tabbed", "standalone"],
+  "tab_strip": { "new_tab_button": { "url": "app.php" }, "home_tab": { "scope_patterns": [{ "pathname": "app.php" }] } },
+  "launch_handler": { "client_mode": ["navigate-existing", "auto"] },
+  "handle_links": "preferred",
+  "background_color": "#ffffff",
+  "theme_color": "#2f5aa8",
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Mail", "url": "app.php", "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Cases", "url": "cases.php", "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Calendar", "url": "calendar.php", "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

@@ -1,0 +1,26 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const window={innerWidth:1000,innerHeight:700};const ctx={window};vm.createContext(ctx);
+vm.runInContext(fs.readFileSync(__dirname+'/../web/assets/floating-window.js','utf8'),ctx);
+assert.equal(window.ecwInitials('George Brown',''),'GB');
+assert.equal(window.ecwInitials('Μαρία Παπαδοπούλου',''),'ΜΠ');
+assert.equal(window.ecwInitials('', 'george.brown@example.test'),'GB');
+const events={};const handle={addEventListener:(k,f)=>events[k]=f,removeEventListener:k=>delete events[k],setPointerCapture(){}};
+const panel={classList:{contains:()=>false},style:{},offsetWidth:600,getBoundingClientRect:()=>({left:100,top:100})};
+window.ecwFloatingWindow(panel,handle);
+events.pointerdown({button:0,target:{closest:()=>false},clientX:120,clientY:110,pointerId:1});
+events.pointermove({clientX:320,clientY:210});assert.equal(panel.style.left,'300px');assert.equal(panel.style.top,'200px');
+events.pointermove({clientX:-40,clientY:-10});assert.equal(panel.style.left,'0px');assert.equal(panel.style.top,'0px');
+events.pointerup();assert.equal(events.pointermove,undefined);
+console.log('PASS sender initials, draggable window, viewport bounds and drag cleanup');
+// Resize adjacent case columns and the reply/history split.
+const make=()=>({style:{},attrs:{},events:{},classList:{add(){},remove(){}},setAttribute(k,v){this.attrs[k]=v;},setPointerCapture(){},addEventListener(k,v){this.events[k]=v;},removeEventListener(k){delete this.events[k];}});
+ctx.document={body:{dataset:{user:'7'}},createElement:make};
+const saved={};ctx.localStorage={getItem:k=>saved[k],setItem:(k,v)=>saved[k]=v};
+const grid={style:{},children:[],appendChild(x){this.children.push(x);},querySelector:()=>({getBoundingClientRect:()=>({width:400})})};
+window.ecwCaseDividers(grid,[{thread_id:1},{thread_id:2}],12,3);
+const d=grid.children[0];assert.equal(d.style.gridRow,'1 / 12');
+d.events.pointerdown({button:0,preventDefault(){},pointerId:1,clientX:400});d.events.pointermove({clientX:500});assert.match(grid.style.gridTemplateColumns,/minmax\(240px,500fr\) minmax\(240px,300fr\)/);
+d.events.pointermove({clientX:900});assert.match(grid.style.gridTemplateColumns,/minmax\(240px,560fr\) minmax\(240px,240fr\)/);d.events.pointerup();assert.ok(Object.keys(saved).length===1);
+const split=make(),history={style:{}};split.parentElement={getBoundingClientRect:()=>({right:1000,width:1000})};
+window.ecwComposerDivider(split,history);split.events.pointerdown({button:0,preventDefault(){},pointerId:1});split.events.pointermove({clientX:500});assert.equal(history.style.width,'50%');split.events.pointerup();
+console.log('PASS case column resizing, minimum widths, persistence and composer split');

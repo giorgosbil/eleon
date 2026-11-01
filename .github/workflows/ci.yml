@@ -1,0 +1,14 @@
+name: Source checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  php:
+    runs-on: ubuntu-latest
+    container: php:8.4-cli
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Check PHP syntax
+        run: find bin lib web modules tests docker -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Community availability without license or database
+        run: php tests/community_edition_test.php

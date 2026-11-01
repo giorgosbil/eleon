@@ -1,0 +1,8 @@
+{
+  "name": "ecw-browser-tests",
+  "private": true,
+  "description": "Playwright for the browser tests (tests/*_browser.cjs). Install once: npm install --prefix tests/browser",
+  "dependencies": {
+    "playwright": "1.55.0"
+  }
+}
