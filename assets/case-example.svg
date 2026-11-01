@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="620" viewBox="0 0 1120 620" role="img" aria-labelledby="title desc">
+<title id="title">Three conversations about one damaged batch, connected in one case</title>
+<desc id="desc">An illustration, not a screenshot. A customer reports cracked parts, a supplier investigates and an internal quality team checks the measurements. One case holds the conversations, owner and next step.</desc>
+<rect x="1" y="1" width="1118" height="618" rx="18" fill="#f7f7f5" stroke="#dededb"/>
+<g font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif">
+<text x="36" y="44" fill="#707075" font-size="12" letter-spacing="1.5">CASE EXAMPLE</text>
+<text x="36" y="81" fill="#171719" font-size="27" font-weight="600">Damaged batch 2231</text>
+<text x="36" y="108" fill="#68686f" font-size="14">Separate conversations. A shared record of the work.</text>
+<g fill="#fff" stroke="#dededb"><rect x="36" y="140" width="338" height="367" rx="12"/><rect x="391" y="140" width="338" height="367" rx="12"/><rect x="746" y="140" width="338" height="367" rx="12"/></g>
+<g font-size="16" font-weight="600" fill="#202023"><text x="54" y="173">Cracked parts · batch 2231</text><text x="409" y="173">Investigation · batch 2231</text><text x="764" y="173">Quality lab</text></g>
+<circle cx="58" cy="194" r="4" fill="#3676df"/><circle cx="413" cy="194" r="4" fill="#cd8a32"/><circle cx="768" cy="194" r="4" fill="#8661ba"/>
+<g font-size="12" fill="#77777d"><text x="69" y="198">Buyer · ACME</text><text x="424" y="198">Supplier · Delta Castings</text><text x="779" y="198">Inside · Maria and Alex</text></g>
+<path d="M36 217H1084" stroke="#e6e6e3"/>
+<rect x="52" y="234" width="306" height="98" rx="9" fill="#f3f7fe"/><text x="66" y="258" fill="#303034" font-size="13" font-weight="600">Anna · Monday, 09:12</text>
+<g fill="#55555d" font-size="14"><text x="66" y="285">12 housings arrived cracked.</text><text x="66" y="306">Photos attached. Can you investigate?</text></g>
+<rect x="407" y="294" width="306" height="98" rx="9" fill="#fcf6ed"/><text x="421" y="318" fill="#303034" font-size="13" font-weight="600">Delta · Tuesday, 11:47</text>
+<g fill="#55555d" font-size="14"><text x="421" y="345">We're checking the casting run.</text><text x="421" y="366">The root-cause report will follow.</text></g>
+<rect x="762" y="371" width="291" height="58" rx="12" fill="#f1ecf8"/><text x="776" y="393" fill="#453453" font-size="12" font-weight="600">Alex · Tuesday, 14:20</text><text x="776" y="416" fill="#55515e" font-size="14">Wall is 2.1 mm; the spec says 2.5 mm.</text>
+<rect x="781" y="443" width="287" height="48" rx="12" fill="#e9e0f4"/><text x="795" y="459" fill="#453453" font-size="12" font-weight="600">Maria · 14:28</text><text x="795" y="480" fill="#55515e" font-size="14">Thanks. I'll send that to Delta.</text>
+<path d="M205 508V534H915V508M560 508V534" fill="none" stroke="#c5c5c4" stroke-width="1.5"/>
+<rect x="36" y="553" width="1048" height="43" rx="9" fill="#ececea"/>
+<text x="53" y="580" fill="#3e3e45" font-size="14"><tspan font-weight="600">Owner:</tspan> Maria <tspan dx="28" font-weight="600">Next:</tspan> Get the replacement batch confirmed</text>
+<text x="1050" y="580" fill="#73737a" font-size="12" text-anchor="end">Team context stays with the case</text>
+</g></svg>

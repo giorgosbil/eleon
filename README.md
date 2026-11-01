@@ -2,95 +2,87 @@
 
 # Eleon
 
-**Open-source email, cases, collaboration and AI.**
+**One customer issue. Three conversations. One timeline.**
 
-Eleon is a self-hosted email workspace for Outlook and Gmail. Read and send mail,
-create cases from related conversations, collaborate with your team, and use
-optional AI to understand the work and prepare your next action.
+A customer reports a damaged batch. You email the supplier, ask your quality team
+to check the parts, and keep the customer updated. Each conversation has its own
+thread, but they all belong to the same job.
 
-[Product and interactive demo](https://eleon.app/) ·
-[Capabilities](https://eleon.app/features/) ·
-[Self-hosting](https://eleon.app/self-host/) ·
-[Deployment and support](mailto:georgebilalis@hotmail.com?subject=Eleon%20services)
+Eleon brings those threads into one case. Connect Outlook or Gmail, link the
+conversations, and give your team a shared view of what happened and what needs
+to happen next. It runs on your own server and the source is here on GitHub.
 
-## Why Eleon?
+[Try the interactive demo](https://eleon.app/#demo) ·
+[Download the preview](https://github.com/giorgosbil/eleon/releases) ·
+[Browse the features](https://eleon.app/features/)
 
-A customer, supplier and colleague can discuss the same matter in separate threads.
-Eleon puts those conversations on one chronological case timeline, with an owner,
-status, internal notes, checklist and next step. Microsoft and Google continue
-delivering your email; Eleon connects to your existing accounts.
+[![Illustration: customer, supplier and quality-team conversations connected in one case](assets/case-example.svg)](https://eleon.app/#demo)
 
-## Included in the open-source application
+*An illustrated case example. Open the demo to switch between the timeline,
+next steps, notes and AI summary.*
 
-- Outlook/Gmail email, folders, search, drafts, replies and supported two-way sync.
-- Case creation, linked conversations, internal discussion, checklists and next steps.
-- Shared mailboxes, assignments, contacts, templates and supported Outlook calendar.
-- Optional AI summaries, reply drafts, translation, tool-assisted actions and background routines.
-- Automation, response-time targets, reports and shared drafts.
-- Installed Teams, WhatsApp, Telegram and case-chat integrations.
-- Account security, audit, retention, legal hold, exports and backup capabilities.
+## Working a case
 
-**All installed functionality is available without a paid software license or trial.**
-Administrators still control roles, feature access and user views. Connections need
-provider configuration. AI is optional: choose your provider or compatible local
-endpoint. Provider subscriptions, API/model usage and hosting may have their own costs.
+- Start a case from an email and add the other conversations about it.
+- Assign an owner, leave an internal note, and write down the next step.
+- Read and reply from the workspace. Email changes sync with Outlook or Gmail.
+- Ask AI to summarize the case or draft a reply, then review its work.
 
-## Status
+You can use Eleon for everyday email too. Shared inboxes, search, automation and
+the other tools are described in the [feature directory](https://eleon.app/features/).
+AI is optional and uses the provider or compatible local endpoint you configure.
 
-This is the first public **preview**, not a production-readiness certification.
-The full current application snapshot is published under AGPL-3.0-only. The former
-Free/Pro/Business feature split no longer limits the Community build.
+## Try it locally
 
-A fresh Docker build, database migrations, first-account setup, login and account
-access checks were verified in isolation. See [release verification](docs/PUBLIC-RELEASE.md).
-Live Outlook/Gmail OAuth, external AI and messaging providers require your own
-credentials; those external integrations were not exercised in that release check.
-
-## Quick start
-
-Install Git and Docker Desktop (Linux containers), or Docker Engine with Compose.
-Clone the repository and enter its folder:
+You need Git and Docker Desktop with Linux containers, or Docker Engine with Compose.
 
 ```sh
 git clone https://github.com/giorgosbil/eleon.git
 cd eleon
 ```
 
-On Windows PowerShell:
+On Windows, run this in PowerShell:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\Start.ps1
 ```
 
-On Linux/macOS:
+On Linux or macOS:
 
 ```sh
 sh start.sh
 ```
 
-The startup script generates local passwords and an encryption key, builds the
-application and initializes MySQL. Use the first-admin setup code printed by the
-script at <http://localhost:8080/other_things/web/setup.php>. Create your account,
-then connect your mail provider. Open `welcome.html` for the configuration guide.
-The internal `/other_things/web/` path is retained for installation compatibility.
+Startup builds the application, creates the database and prints a first-admin
+setup code. Open <http://localhost:8080/other_things/web/setup.php> and use that
+code to create your account. Then configure your Microsoft or Google connection.
+`welcome.html` walks through the configuration; [INSTALL.md](INSTALL.md) and
+[local setup](docs/LOCAL.md) cover the details.
 
-Keep `.env`, the encryption key, database and backups private. Back up the key with
-your data. Read [local setup](docs/LOCAL.md) and [INSTALL.md](INSTALL.md) for provider
-registration, configuration, ports, HTTPS and operational requirements.
+Keep `.env` and your encryption key private, and back up the key with your data.
 
-## Hosting and services
+## Where things stand
 
-Self-hosting the software is free. Paid work can cover deployment, migration,
-training and support. Managed hosting is planned; no hosted subscription is sold
-from this repository. [Contact George](mailto:georgebilalis@hotmail.com) to discuss a setup.
+This is the first public preview. Fresh Docker installation, account setup and
+access-control checks passed. Live mail, AI and messaging connections weren't
+part of that release check. Read the [testing notes](docs/PUBLIC-RELEASE.md) for
+what was tested, and try your provider connections before relying on a deployment.
 
-## Contribute
+## Hosting and support
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md), propose focused changes and use synthetic
-data in issues and tests. Report vulnerabilities privately using [SECURITY.md](SECURITY.md).
+The full application is open source, with no paid feature tiers or software trial.
+You pay for your own infrastructure and any provider or AI usage.
+
+For help with deployment, migration, training or support,
+[contact George](mailto:georgebilalis@hotmail.com). Managed hosting is planned.
+
+## Contributing
+
+Bug reports, documentation fixes and code contributions are welcome.
+See [CONTRIBUTING.md](CONTRIBUTING.md). Use fictional data in public issues;
+report security problems privately through [SECURITY.md](SECURITY.md).
 
 ## License
 
-Eleon original application code: [AGPL-3.0-only](LICENSE).
-Copyright © 2026 George Bilalis. Third-party components retain their own licenses;
-see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+[AGPL-3.0-only](LICENSE) · Copyright © 2026 George Bilalis.
+Third-party components keep their own licenses; see [the notices](THIRD_PARTY_NOTICES.md).
