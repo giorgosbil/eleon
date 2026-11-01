@@ -1,4 +1,4 @@
-<p align="center"><img src="assets/eleon.svg" width="64" alt="Eleon logo"></p>
+<p align="center"><img src="assets/eleon-readme.svg" width="64" height="64" alt="Eleon logo"></p>
 
 # Eleon
 
