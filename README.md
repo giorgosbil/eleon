@@ -16,10 +16,9 @@ to happen next. It runs on your own server and the source is here on GitHub.
 [Download the preview](https://github.com/giorgosbil/eleon/releases) ·
 [Browse the features](https://eleon.app/features/)
 
-[![Illustration: customer, supplier and quality-team conversations connected in one case](assets/case-example.svg)](https://eleon.app/#demo)
+[![Eleon case workspace showing customer and supplier emails, an internal team chat, and offers and purchase orders](assets/githubmain.png)](assets/githubmain.png)
 
-*An illustrated case example. Open the demo to switch between the timeline,
-next steps, notes and AI summary.*
+*A demo case with fictional messages: customer and supplier email threads, the quality team chat, and the path from a quote request to an order. Click the screenshot to view it full size.*
 
 ## Working a case
 
