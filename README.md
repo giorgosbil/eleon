@@ -33,12 +33,29 @@ AI is optional and uses the provider or compatible local endpoint you configure.
 
 ## Try it locally
 
-You need Git and Docker Desktop with Linux containers, or Docker Engine with Compose.
+Install Git and [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+(Windows/macOS), or Docker Engine with Compose on Linux.
+
+Open Docker Desktop and wait for **Engine running**. Installing it alone does not
+start the engine. On Windows, follow any WSL update/restart prompt and use Linux
+containers. Check that this works before continuing:
+
+```sh
+docker info
+```
+
+Testing inside a Hyper-V VM? Enable nested virtualization first; follow the
+[VM setup steps](INSTALL.md#testing-in-a-hyper-v-vm).
+
+Clone the repository and enter the folder once:
 
 ```sh
 git clone https://github.com/giorgosbil/eleon.git
 cd eleon
 ```
+
+Already downloaded or cloned it? Open the folder containing `Start.ps1` and
+`compose.yaml`; you can skip the two commands above.
 
 On Windows, run this in PowerShell:
 

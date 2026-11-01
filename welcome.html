@@ -296,7 +296,8 @@ dialog.guide::backdrop { background: rgba(10, 15, 25, .65); }
           <div class="photo-row"></div>
           <ol>
             <li>Download <a href="https://www.docker.com/products/docker-desktop/" target="_blank" rel="noopener">Docker Desktop</a> and install it. Restart the computer.</li>
-            <li>Open Docker Desktop and wait until it says <strong>Engine running</strong>.</li>
+            <li>Open Docker Desktop <strong>on the computer or inside the VM where you will run Eleon</strong>. Wait until it says <strong>Engine running</strong>. If it asks for a WSL update or restart, complete that first.</li>
+            <li>Run <code>docker info</code> in PowerShell. It must show server information without a connection error. If the Docker tray menu offers <strong>Switch to Linux containers</strong>, select it and wait for the engine again.</li>
             <li>Docker Desktop → <strong>Settings → General</strong> → tick <strong>Start Docker Desktop when you sign in</strong>.</li>
           </ol>
         </div>
@@ -306,7 +307,7 @@ dialog.guide::backdrop { background: rgba(10, 15, 25, .65); }
         <h3>Get the app</h3>
         <p>On <a href="https://github.com/giorgosbil/eleon" target="_blank" rel="noopener">Eleon’s GitHub page</a>, choose <strong>Code → Download ZIP</strong> and unpack it, or clone it:</p>
         <div class="cmd"><pre id="cloneCmd"></pre></div>
-        <p>Put the folder somewhere permanent, for example <code id="folderHint"></code>, and write below where it is. The commands on this page then start by going into it.</p>
+        <p>Put the folder somewhere permanent, for example <code id="folderHint"></code>, and write below where it is. Use the folder with <code>Start.ps1</code> and <code>compose.yaml</code> inside. If you already cloned or unpacked it, skip the clone command; do not create another nested copy. The commands below use the path you enter.</p>
         <div class="form">
           <div class="field full">
             <label for="f-folder">Where is the app folder?</label>
@@ -318,6 +319,10 @@ dialog.guide::backdrop { background: rgba(10, 15, 25, .65); }
         <details class="stuck"><summary>Stuck?</summary><dl>
           <dt data-os="windows">Docker Desktop says WSL is missing or must be updated</dt>
           <dd data-os="windows">Open the Start menu, type <strong>Terminal</strong>, right-click → <strong>Run as administrator</strong>, run <code>wsl --update</code>, then restart the computer.</dd>
+          <dt data-os="windows">Missing pipe: <code>dockerDesktopLinuxEngine</code></dt>
+          <dd data-os="windows">Docker’s Linux engine is not running. Open Docker Desktop inside this computer or VM, wait for <strong>Engine running</strong>, then retry <code>docker info</code>. Read the error in Docker Desktop if it cannot start.</dd>
+          <dt data-os="windows">Testing inside a Hyper-V VM</dt>
+          <dd data-os="windows">Shut down the VM. On your <strong>main PC</strong>, open administrator PowerShell and run <code>Set-VMProcessor -VMName "Your VM name" -ExposeVirtualizationExtensions $true</code>, replacing the name. Start the VM and open Docker Desktop inside it. <a href="INSTALL.md#testing-in-a-hyper-v-vm">Full VM setup instructions</a>.</dd>
           <dt data-os="windows,mac">"Virtualization is not enabled"</dt>
           <dd data-os="windows,mac">It must be switched on in the computer's BIOS / UEFI settings (often called <em>Intel VT-x</em> or <em>AMD SVM</em>). Your IT person or the computer maker's support page shows how.</dd>
           <dt>Download ZIP gives a folder with a long name</dt>

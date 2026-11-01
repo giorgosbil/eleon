@@ -5,11 +5,70 @@ and optional AI. All installed software features are included without a paid key
 
 ## Start from source
 
-Install Git and Docker Desktop with Linux containers (or Docker Engine + Compose
-on Linux). Clone https://github.com/giorgosbil/eleon and enter its folder.
+1. Install Git and [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+   on Windows/macOS, or Docker Engine with the Compose plugin on Linux.
+2. On Windows/macOS, **open Docker Desktop** and wait for **Engine running**.
+   Follow any WSL update or restart prompt on Windows. Use Linux containers;
+   if the tray menu offers **Switch to Linux containers**, select it.
+   Keep Docker Desktop running while using Eleon.
+3. Run `docker info` in your terminal. It must show server information without
+   a connection error before you start Eleon. On Linux, ensure the Docker service
+   is running and your user can access it.
+4. Download or clone the source:
 
-- Windows: `powershell -ExecutionPolicy Bypass -File .\Start.ps1`
-- Linux/macOS: `sh start.sh`
+   ```sh
+   git clone https://github.com/giorgosbil/eleon.git
+   cd eleon
+   ```
+
+   Run these once. If the source is already downloaded, open the folder containing
+   `Start.ps1` and `compose.yaml` instead. Do not run `cd eleon` again inside it.
+
+5. On Windows, run in PowerShell:
+
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File .\Start.ps1
+   ```
+
+   On Linux/macOS:
+
+   ```sh
+   sh start.sh
+   ```
+
+## Docker cannot connect on Windows
+
+An error mentioning `dockerDesktopLinuxEngine` or a missing named pipe means
+Docker's Linux engine is unavailable. Eleon has not started yet.
+
+Open Docker Desktop **inside the Windows installation where you run Eleon**.
+For a VM, opening Docker on the main PC does not start it inside the guest.
+Wait for **Engine running**, then try `docker info` again. Follow any WSL prompt;
+if needed, run `wsl --update` in administrator PowerShell, restart Windows and
+reopen Docker Desktop. If it still fails, check the error in Docker Desktop.
+
+## Testing in a Hyper-V VM
+
+Docker's Linux engine inside a Windows VM needs nested virtualization.
+
+1. Shut down the guest from its Start menu. It must be **Off**, not saved or paused.
+2. On the **main PC**, open PowerShell as administrator. List the VM names:
+
+   ```powershell
+   Get-VM | Select-Object Name, State
+   ```
+
+3. Replace the example name below with your VM's name:
+
+   ```powershell
+   Set-VMProcessor -VMName "Your VM name" -ExposeVirtualizationExtensions $true
+   ```
+
+4. Start the VM, open Docker Desktop **inside it**, and wait for **Engine running**.
+5. Run `docker info` inside the VM, then run Eleon's start command above.
+
+See [Microsoft's nested virtualization requirements](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/enable-nested-virtualization)
+and [Docker's VM setup guidance](https://docs.docker.com/desktop/setup/vm-vdi/).
 
 The first build needs internet. Use the first-admin setup code printed by startup
 at http://localhost:8080/other_things/web/setup.php, create an account, then connect

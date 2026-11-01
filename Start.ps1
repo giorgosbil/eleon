@@ -1,7 +1,21 @@
 $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
-docker info | Out-Null
-if ($LASTEXITCODE -ne 0) { throw 'Start Docker Desktop with Linux containers, then run this script again.' }
+if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
+    throw 'Install Docker Desktop first, open it from Start, and wait for Engine running. See INSTALL.md.'
+}
+# Report setup steps instead of Docker's raw named-pipe error.
+$dockerPreference = $ErrorActionPreference
+try {
+    $ErrorActionPreference = 'Continue'
+    $engineType = docker info --format '{{.OSType}}' 2>$null
+    $engineExit = $LASTEXITCODE
+} finally { $ErrorActionPreference = $dockerPreference }
+if ($engineExit -ne 0) {
+    throw 'Docker is not ready. Inside this computer or VM, open Docker Desktop and wait for Engine running. Follow any WSL update/restart prompt, then run docker info. In a Hyper-V VM, check nested virtualization on the main PC (INSTALL.md). Run Start.ps1 again after docker info succeeds.'
+}
+if (($engineType -join '').Trim() -ne 'linux') {
+    throw 'Eleon needs Linux containers. In the Docker Desktop tray menu, choose Switch to Linux containers, wait for Engine running, then run Start.ps1 again.'
+}
 docker run --rm -v "${PSScriptRoot}:/work" -w /work php:8.4-cli php docker/configure.php
 if ($LASTEXITCODE -ne 0) { throw 'Local configuration could not be generated.' }
 & "$PSScriptRoot\scripts\lan-ip.ps1"
