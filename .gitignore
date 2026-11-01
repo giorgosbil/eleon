@@ -1,0 +1,16 @@
+# Public exports must never contain local settings or runtime data.
+.env
+.env.*
+!.env.example
+config.local.php
+*.key
+*.pem
+*.license
+vendor/
+node_modules/
+storage/
+cache/
+logs/
+backups/
+exports/
+dist/

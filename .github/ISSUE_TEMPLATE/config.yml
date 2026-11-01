@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security report (private)
+    url: mailto:georgebilalis@hotmail.com?subject=Eleon%20security%20report
+    about: Report vulnerabilities privately; do not disclose them in public issues.
+  - name: Product demo and early access
+    url: https://eleon.app/
+    about: Explore the product and request access while the first release is prepared.
