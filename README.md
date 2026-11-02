@@ -4,6 +4,10 @@
 
 **One customer issue. Three conversations. One timeline.**
 
+Eleon is an open-source, self-hosted help desk and shared inbox for Outlook and
+Gmail. It is a Zendesk alternative for teams handling customer support by email,
+with case management, team collaboration and optional AI.
+
 A customer reports a damaged batch. You email the supplier, ask your quality team
 to check the parts, and keep the customer updated. Each conversation has its own
 thread, but they all belong to the same job.
@@ -30,6 +34,18 @@ to happen next. It runs on your own server and the source is here on GitHub.
 You can use Eleon for everyday email too. Shared inboxes, search, automation and
 the other tools are described in the [feature directory](https://eleon.app/features/).
 AI is optional and uses the provider or compatible local endpoint you configure.
+
+## A Zendesk alternative for email support
+
+If you are looking for an email ticketing system, Eleon calls each piece of work
+a **case**. One case can hold several email threads and an internal discussion,
+so your customer, supplier and colleagues can stay in their own conversations.
+The team shares the case, its owner, notes and next step.
+
+Comparing Zendesk, Chatwoot or Front? Try Eleon when you want a self-hosted shared
+inbox with this case workflow and your existing Outlook or Gmail accounts.
+This is an early public preview; test the workflows you need before moving your
+team over. The full application is available under AGPL-3.0-only.
 
 ## Try it locally
 
