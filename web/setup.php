@@ -17,7 +17,7 @@ $error='';$done=false;
 if(!$exists && ($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
  $locked=false;
  try {
-  if(!ecw_csrf_valid((string)($_POST['csrf']??''))||!hash_equals((string)getenv('ECW_SETUP_TOKEN'),(string)($_POST['setup_token']??'')))throw new RuntimeException('That setup code is not right. Copy it again (step 8 of the setup guide does it for you) and paste it here.');
+  if(!ecw_csrf_valid((string)($_POST['csrf']??''))||!hash_equals((string)getenv('ECW_SETUP_TOKEN'),(string)($_POST['setup_token']??'')))throw new RuntimeException('That setup code is not right. Copy it again from the line “First-admin setup code” at the end of the start window and paste it here.');
   $name=trim((string)($_POST['name']??''));$email=strtolower(trim((string)($_POST['email']??'')));$org=trim((string)($_POST['organization']??''));$password=(string)($_POST['password']??'');
   if(!$name||!$org||mb_strlen($name)>120||mb_strlen($org)>120||!filter_var($email,FILTER_VALIDATE_EMAIL)||strlen($email)>320)throw new RuntimeException('Enter a company name, your name, and a valid email.');
   if($problem=ecw_password_problem($password))throw new RuntimeException($problem);
@@ -55,7 +55,7 @@ $old=static fn(string $k):string=>$error!==''?trim((string)($_POST[$k]??'')):'';
     <fieldset class="setup-group setup-code">
       <legend><span class="setup-num">1</span> Setup code</legend>
       <div class="setup-secret"><input id="setup_token" name="setup_token" type="password" autocomplete="off" spellcheck="false" required autofocus aria-describedby="codeHint"><button type="button" class="setup-eye" data-show="setup_token" aria-label="Show the code"><i class="fa fa-eye"></i></button></div>
-      <p class="setup-hint" id="codeHint">Step 8 of the setup guide copies it for you. It is also on the last lines of the start command.</p>
+      <p class="setup-hint" id="codeHint">The start command copied it for you: click the box and press Ctrl+V. It is also the green line “First-admin setup code” at the end of that window.</p>
     </fieldset>
     <fieldset class="setup-group">
       <legend><span class="setup-num">2</span> Your company</legend>

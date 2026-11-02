@@ -14,7 +14,8 @@ and optional AI. All installed software features are included without a paid key
 3. Run `docker info` in your terminal. It must show server information without
    a connection error before you start Eleon. On Linux, ensure the Docker service
    is running and your user can access it.
-4. Download or clone the source:
+4. Download or clone the source into a folder of your own, for example `C:\dev`
+   on Windows (not `C:\Windows\System32`, where an administrator PowerShell opens):
 
    ```sh
    git clone https://github.com/giorgosbil/eleon.git
@@ -62,7 +63,12 @@ Docker's Linux engine inside a Windows VM needs nested virtualization.
 
    ```powershell
    Set-VMProcessor -VMName "Your VM name" -ExposeVirtualizationExtensions $true
+   Set-VMNetworkAdapter -VMName "Your VM name" -MacAddressSpoofing On
+   Set-VMMemory -VMName "Your VM name" -DynamicMemoryEnabled $false -StartupBytes 8GB
    ```
+
+   The second line lets Docker's containers reach the network; the third gives the
+   VM fixed memory, which Docker needs (4GB is the minimum).
 
 4. Start the VM, open Docker Desktop **inside it**, and wait for **Engine running**.
 5. Run `docker info` inside the VM, then run Eleon's start command above.

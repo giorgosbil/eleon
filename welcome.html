@@ -963,6 +963,17 @@ dialog.guide::backdrop { background: rgba(10, 15, 25, .65); }
   const done = new Set(legacy || store.get('finished') || []);         // steps left with Next
   let view = store.get('view') === 'settings' ? 'settings' : 'wizard';
   let current = store.get('current') || 's-need';
+  // Opened from the app (web/setup-guide.php): the installation runs already, so its own address
+  // is the default, and #mail / #mail-google open the settings at the mail provider step.
+  const fromApp = /^https?:$/.test(location.protocol) && /\/setup-guide\.php$/.test(location.pathname);
+  const jump = /^#mail(-google)?$/.exec(location.hash);
+  if (fromApp && !store.get('state')) {
+    const appPort = parseInt(location.port, 10) || (location.protocol === 'https:' ? 443 : 80);
+    if (LOCALHOST.test(location.hostname)) Object.assign(state, { mode: 'local', httpPort: appPort });
+    else Object.assign(state, { mode: 'server', host: location.hostname, httpsPort: appPort });
+    state.existing = true;   // its .env has passwords: it must be loaded before a new one is saved
+  }
+  if (fromApp || jump) view = 'settings';
   const saveProgress = () => { store.set('confirmed', [...confirmed]); store.set('finished', [...done]); store.set('current', current); store.set('view', view); };
 
   const wizardSteps = () => $$('.step[data-step]').filter((s) => !s.hidden);
@@ -1290,6 +1301,10 @@ dialog.guide::backdrop { background: rgba(10, 15, 25, .65); }
   fillFields();
   render();
   saveProgress();
+  if (jump) {
+    if (jump[1]) $('.tabs [data-tab="google"]').click();
+    $('#s-mail').scrollIntoView();
+  }
 })();
 </script>
 </body>

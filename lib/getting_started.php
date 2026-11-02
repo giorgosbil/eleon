@@ -35,8 +35,19 @@ function ecw_getting_started_steps(int $orgId, int $userId, bool $isAdmin): arra
             ecw_app_setting('gs_company_' . $orgId) !== null);
     }
     $hasMailbox = (int)$q('SELECT COUNT(*) FROM `' . ecw_table('mailboxes') . "` WHERE organization_id = ? AND connected_by_user_id = ? AND sync_status <> 'disconnected'", [$orgId, $userId]) > 0;
-    $add('mailbox', 'Connect your mailbox', 'Your Outlook or Gmail comes in: search, cases and the assistant work on your real mail. Nothing changes in your mailbox until you act.',
-        $hasMailbox, $base . 'settings/mailbox.php', 'Connect');
+    require_once __DIR__ . '/mailbox.php';
+    $providerReady = ecw_provider_configured('microsoft') || ecw_provider_configured('google');
+    if ($hasMailbox || $providerReady) {
+        $add('mailbox', 'Connect your mailbox', 'Your Outlook or Gmail comes in: search, cases and the assistant work on your real mail. Nothing changes in your mailbox until you act.',
+            $hasMailbox, $base . 'settings/mailbox.php', 'Connect');
+    } elseif ($isAdmin) {
+        // A new installation: Outlook / Gmail are not registered yet, and only an admin can do it.
+        $add('mailbox', 'Connect your mailbox', 'First, once for everyone: register the app with Microsoft or Google (about 10 minutes). The setup guide walks you through it; then you connect your mailbox.',
+            false, $base . 'settings/mailbox.php', 'Set up Outlook or Gmail');
+    } else {
+        $add('mailbox', 'Connect your mailbox', 'Your administrator sets up Outlook or Gmail first; then you connect your mailbox here.',
+            false, $base . 'settings/mailbox.php', 'Open');
+    }
     if ($isAdmin) {
         $people = (int)$q('SELECT COUNT(*) FROM `' . ecw_table('organization_users') . '` ou JOIN `' . ecw_table('users') . '` u ON u.id = ou.user_id WHERE ou.organization_id = ? AND u.disabled_at IS NULL', [$orgId]);
         $invited = 0;

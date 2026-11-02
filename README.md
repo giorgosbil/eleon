@@ -63,7 +63,8 @@ docker info
 Testing inside a Hyper-V VM? Enable nested virtualization first; follow the
 [VM setup steps](INSTALL.md#testing-in-a-hyper-v-vm).
 
-Clone the repository and enter the folder once:
+Clone the repository into a folder of your own, for example `C:\dev` on Windows
+(not `C:\Windows\System32`, where an administrator PowerShell opens), and enter it once:
 
 ```sh
 git clone https://github.com/giorgosbil/eleon.git
@@ -85,11 +86,15 @@ On Linux or macOS:
 sh start.sh
 ```
 
-Startup builds the application, creates the database and prints a first-admin
-setup code. Open <http://localhost:8080/other_things/web/setup.php> and use that
-code to create your account. Then configure your Microsoft or Google connection.
-`welcome.html` walks through the configuration; [INSTALL.md](INSTALL.md) and
-[local setup](docs/LOCAL.md) cover the details.
+Startup builds the application, creates the database, prints a first-admin setup
+code and copies it to the clipboard. The setup page
+(<http://localhost:8080/other_things/web/setup.php>) opens by itself: paste the
+code and create your account.
+
+To connect Outlook or Gmail, open **Settings → Mailbox** in the app. It opens the
+setup guide at the right step, with your installation's address filled in.
+Prefer a guided installation from the very start? Open `welcome.html` in the cloned
+folder. [INSTALL.md](INSTALL.md) and [local setup](docs/LOCAL.md) cover the details.
 
 Keep `.env` and your encryption key private, and back up the key with your data.
 

@@ -97,8 +97,20 @@ $navActive = 'settings';
 <h1>Mailbox</h1>
 <p>Connect your Microsoft 365 (Outlook) or Google (Gmail) mailbox to synchronize email, send/reply from the workspace, and use Cases.</p>
 <?php if (isset($messages[$notice])): ?><div class="flash"><?= $h($messages[$notice]) ?></div><?php endif; ?>
-<?php if (!$configured && !$googleConfigured): ?>
-<div class="flash err">No mail provider is configured on this server. Contact the system administrator.</div>
+<?php if (!$configured && !$googleConfigured && !$isAdmin): ?>
+<div class="flash err">Outlook and Gmail are not set up on this server yet. Ask your administrator to set them up; then you can connect your mailbox here.</div>
+<?php elseif (!$configured && !$googleConfigured): ?>
+<section class="panel"><h3>One-time setup: Outlook or Gmail</h3>
+<p>Before anyone can connect a mailbox, register <?= $h(ecw_product_brand()['name']) ?> once with Microsoft or Google. It takes about 10 minutes, and the setup guide walks you through it:</p>
+<ol>
+  <li>In the guide, <strong>load your current <code>.env</code></strong> (in the app folder), so its passwords are kept.</li>
+  <li>Register the app with Microsoft or Google. The guide shows this installation's exact <strong>redirect address</strong> to paste there.</li>
+  <li>Paste the two values you get into the guide, <strong>download the new <code>.env</code></strong> and put it in the app folder in place of the old one.</li>
+  <li>Restart the app (the guide shows the command), then come back here and connect.</li>
+</ol>
+<p><a class="button primary" href="<?= $h($base) ?>setup-guide.php#mail" target="_blank" rel="noopener"><i class="fa-brands fa-microsoft" aria-hidden="true"></i> Set up Outlook</a>
+<a class="button" href="<?= $h($base) ?>setup-guide.php#mail-google" target="_blank" rel="noopener"><i class="fa-brands fa-google" aria-hidden="true"></i> Set up Gmail</a></p>
+</section>
 <?php elseif ($configured && ($notice === 'approval_required' || !empty($_SESSION['ecw_outlook_approval'][$orgId]))): ?>
 <section class="panel"><h3>Administrator approval required</h3>
 <p>Your Microsoft 365 administrator must approve Email Case Workspace before this mailbox can be connected.</p>
@@ -250,7 +262,9 @@ document.querySelectorAll('[data-switch-account]').forEach((b) => b.addEventList
 <?php if ($googleConfigured): ?><a class="button primary" href="<?= $h($base) ?>oauth/start.php?provider=google"><i class="fa-brands fa-google" aria-hidden="true"></i> Connect Gmail</a><?php endif; ?>
 </p>
 <?php if ($configured && !empty((static function () { try { return ecw_graph_config(); } catch (Throwable $e) { return []; } })()['personal_accounts'])): ?><p class="muted small">Microsoft: a work or school account, or a personal Outlook.com / Hotmail / Live account. Teams chats are available for work and school accounts only.</p><?php endif; ?>
-<?php if (!$googleConfigured): ?><p class="muted small">Gmail is available once an administrator adds Google OAuth credentials (ECW_GOOGLE_CLIENT_ID / ECW_GOOGLE_CLIENT_SECRET). See docs/LOCAL.md.</p><?php endif; ?>
+<?php foreach ([['Gmail', $googleConfigured, '#mail-google'], ['Outlook', $configured, '#mail']] as [$pname, $pok, $anchor]): if ($pok || (!$configured && !$googleConfigured)) continue; ?>
+<p class="muted small"><?php if ($isAdmin): ?><?= $pname ?> needs a one-time setup too: <a href="<?= $h($base) ?>setup-guide.php<?= $anchor ?>" target="_blank" rel="noopener">open the setup guide</a>.<?php else: ?><?= $pname ?> is available once an administrator sets it up.<?php endif; ?></p>
+<?php endforeach; ?>
 </main>
 </div>
 <script src="<?= $h($base) ?>assets/mailbox-settings.js?v=<?= filemtime(dirname(__DIR__) . '/assets/mailbox-settings.js') ?>"></script>

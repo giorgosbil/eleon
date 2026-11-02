@@ -26,9 +26,13 @@ foreach ($line in Get-Content .env) {
     if ($line -match '^ECW_HTTP_PORT=(\d+)$') { $localPort = $Matches[1] }
     if ($line -match '^ECW_SETUP_TOKEN=(.*)$') { $code = $Matches[1].Trim().Trim('"', "'") }
 }
-# The code was printed before the long build too; repeat it here, where people look.
+# The code was printed before the long build too; repeat it here, where people look,
+# and put it on the clipboard: Ctrl+V on the setup page is all it takes.
+$copied = $false
+if ($code) { try { Set-Clipboard -Value $code; $copied = $true } catch {} }
 Write-Host ''
 Write-Host 'Ready.' -ForegroundColor Green
 Write-Host "First-admin setup code: $code" -ForegroundColor Green
+if ($copied) { Write-Host 'The code is copied: click the Setup code box on the page and press Ctrl+V.' -ForegroundColor Green }
 Write-Host "The setup page opens by itself: http://localhost:${localPort}/other_things/web/setup.php"
 Start-Process "http://localhost:${localPort}/other_things/web/setup.php"
