@@ -549,7 +549,7 @@ dialog.guide::backdrop { background: rgba(10, 15, 25, .65); }
         <p>Open <span data-os="windows"><strong>Terminal</strong> (Start → type Terminal)</span><span data-os="linux,mac">a terminal</span> and run these lines. The first one goes into the app folder, the second starts the app:</p>
         <div class="cmd"><pre id="startCmd"></pre></div>
         <ul>
-          <li>It is finished when the last lines say <strong>Container … Healthy</strong> (or <strong>Started</strong>) and <strong>Ready</strong>. You need nothing from these lines: the next step gets the setup code for you.</li>
+          <li>It is finished when the last lines say <strong>Container … Healthy</strong> (or <strong>Started</strong>) and <strong>Ready</strong>.<span data-first-install> You need nothing from these lines: the next step gets the setup code for you.</span></li>
           <li>It starts by itself after every restart of the computer<span data-os="windows,mac"> (as long as Docker Desktop starts when you sign in)</span>.</li>
         </ul>
         <p class="autocheck" id="startCheck"></p>
@@ -973,7 +973,20 @@ dialog.guide::backdrop { background: rgba(10, 15, 25, .65); }
     else Object.assign(state, { mode: 'server', host: location.hostname, httpsPort: appPort });
     state.existing = true;   // its .env has passwords: it must be loaded before a new one is saved
   }
-  if (fromApp || jump) view = 'settings';
+  // From the app the same slides, but only the ones that connect a mail provider.
+  const CONNECT_STEPS = ['s-where', 's-mail', 's-env', 's-start', 's-app'];
+  if (fromApp) {
+    view = 'wizard';
+    $('.hero h1').textContent = 'Connect Outlook or Gmail';
+    $('.hero p').textContent = 'Once for your whole company: register ' + BRAND.product + ' with Microsoft or Google, save the new settings file and restart. Then everyone connects their own mailbox in the app.';
+    $('.hero .facts').innerHTML = '<li>About 20 minutes</li><li>Your passwords are kept</li><li>Nothing typed here leaves this browser</li>';
+    const restart = $('#s-start');
+    restart.dataset.title = 'Restart it';
+    restart.dataset.min = '2';   // built already: a restart takes a minute or two
+    $('h2', restart).textContent = 'Restart it';
+    $('.why', restart).textContent = 'Run the start command again: it reads the new settings file. It is done when it says Ready.';
+    $$('[data-first-install]').forEach((el) => { el.hidden = true; });
+  } else if (jump) view = 'settings';
   const saveProgress = () => { store.set('confirmed', [...confirmed]); store.set('finished', [...done]); store.set('current', current); store.set('view', view); };
 
   const wizardSteps = () => $$('.step[data-step]').filter((s) => !s.hidden);
@@ -1098,7 +1111,8 @@ dialog.guide::backdrop { background: rgba(10, 15, 25, .65); }
   let pollFor = null, pollTimer = null;
   function managePolling() {
     const want = view !== 'wizard' ? null
-      : current === 's-start' && !confirmed.has('s-start') ? 's-start'
+      // From the app it answers already, before the restart: the box is ticked by hand there.
+      : current === 's-start' && !confirmed.has('s-start') && !fromApp ? 's-start'
       : current === 's-https' ? 's-https' : null;
     if (want === pollFor) return;
     clearTimeout(pollTimer); pollFor = want;
@@ -1179,6 +1193,7 @@ dialog.guide::backdrop { background: rgba(10, 15, 25, .65); }
     $$('[data-choice]').forEach((seg) => $$('button', seg).forEach((b) => b.setAttribute('aria-pressed', String(state[seg.dataset.choice] === b.dataset.v))));
     $$('[data-os]').forEach((el) => { el.hidden = !el.dataset.os.split(',').includes(state.os); });
     $$('[data-mode]').forEach((el) => { el.hidden = el.dataset.mode !== state.mode; });
+    if (fromApp) $$('.step[data-step]').forEach((s) => { if (!CONNECT_STEPS.includes(s.id)) s.hidden = true; });
     $$('[data-out]').forEach((el) => { el.textContent = d[el.dataset.out]; });
     $$('[data-out-href]').forEach((el) => { el.href = d[el.dataset.outHref]; });
     $('#cloneCmd').textContent = c.clone;
@@ -1301,10 +1316,8 @@ dialog.guide::backdrop { background: rgba(10, 15, 25, .65); }
   fillFields();
   render();
   saveProgress();
-  if (jump) {
-    if (jump[1]) $('.tabs [data-tab="google"]').click();
-    $('#s-mail').scrollIntoView();
-  }
+  if (jump && jump[1]) $('.tabs [data-tab="google"]').click();
+  if (jump && !fromApp) $('#s-mail').scrollIntoView();
 })();
 </script>
 </body>
